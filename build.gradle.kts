@@ -21,3 +21,6 @@ tasks.withType<KotlinCompile> {
 application {
     mainClass.set("MainKt")
 }
+dependencies{
+    implementation("com.opencsv:opencsv:5.7.1")
+}
