@@ -1,4 +1,4 @@
-import com.opencsv.CSVReader
+//import com.opencsv.CSVReader
 import javafx.event.ActionEvent
 import javafx.fxml.FXML
 import javafx.scene.layout.BorderPane
@@ -54,28 +54,28 @@ class TempDataWindowControl {
         return records
     }
 
-    fun readCSVfromFile(file: File): ArrayList<List<String?>> {
-        var i = 0
-        var flag = false
-        val records: ArrayList<List<String?>> = ArrayList()
-        CSVReader(InputStreamReader(FileInputStream(file.name), "CP1251")).use { csvReader ->
-            var values: Array<String?>? = null
-            while (csvReader.readNext().also { values = it } != null) {
-                if (i >= 2) records.add(values!!.asList())
-                if (flag) i++
-//                println(values)
-                values!!.forEach { it1 ->
-//                    print(it1)
-                    //todo делать запись в массив данных через 1 строку после "Доп. информация"
-                    if (it1!!.contains("Доп. информация")) {
-                        print("!!!!")
-                        flag = true
-                        i++
-                    }
-                }
-//                println()
-            }
-        }
-        return records
-    }
+//    fun readCSVfromFile(file: File): ArrayList<List<String?>> {
+//        var i = 0
+//        var flag = false
+//        val records: ArrayList<List<String?>> = ArrayList()
+//        CSVReader(InputStreamReader(FileInputStream(file.name), "CP1251")).use { csvReader ->
+//            var values: Array<String?>? = null
+//            while (csvReader.readNext().also { values = it } != null) {
+//                if (i >= 2) records.add(values!!.asList())
+//                if (flag) i++
+////                println(values)
+//                values!!.forEach { it1 ->
+////                    print(it1)
+//                    //todo делать запись в массив данных через 1 строку после "Доп. информация"
+//                    if (it1!!.contains("Доп. информация")) {
+//                        print("!!!!")
+//                        flag = true
+//                        i++
+//                    }
+//                }
+////                println()
+//            }
+//        }
+//        return records
+//    }
 }
