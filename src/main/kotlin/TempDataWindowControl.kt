@@ -10,7 +10,7 @@ import java.util.*
 class TempDataWindowControl {
     @FXML
     lateinit var mainPane: BorderPane
-
+    lateinit var headers: Array<String>
     fun openCSVfile(actionEvent: ActionEvent) {
         println("open file")
         val fileChooser = FileChooser().apply {
@@ -24,12 +24,25 @@ class TempDataWindowControl {
         }
         val file = fileChooser.showOpenDialog(mainPane.scene.window)
         val records = readCSVfromFile2(file)
-        records.forEach {
-            it.forEach { it1 ->
-                print("$it1 ")
-            }
-            println()
+        headers[0] = "Date"
+        headers = headers.plus(headers[headers.size-1])
+        for(i in headers.size-1 downTo 2){
+            headers[i] = headers[i-1]
         }
+        headers[1] = "Time"
+        headers.forEach {
+            print("$it ")
+        }
+        println()
+//        records.forEach {
+//            it.forEach { it1 ->
+//                print("$it1 ")
+//            }
+//            println()
+//        }
+        val dbObject = DBwork()
+        dbObject.writeToDB(headers, records)
+        //todo сделать вывод записей в таблицу с переменным кол-ом колонок
         println("size = ${records.size}")
     }
 
@@ -41,12 +54,14 @@ class TempDataWindowControl {
         br.readLines().forEach {line ->
 //            println(line)
             if (i >= 2) {
-                val values: Array<String> = line.split(';').dropLastWhile { it.isEmpty() }.toTypedArray()
+                val values: Array<String> = line.split(';', ' ').dropLastWhile { it.isEmpty() }.toTypedArray()
                 records.add(values.asList())
             }
             if (flag) i++
             if (line.contains("Доп. информация")) {
 //                print("!!!!")
+//                println(line)
+                headers = line.split(';').dropLastWhile { it.isEmpty() }.toTypedArray()
                 flag = true
                 i++
             }
@@ -66,7 +81,6 @@ class TempDataWindowControl {
 ////                println(values)
 //                values!!.forEach { it1 ->
 ////                    print(it1)
-//                    //todo делать запись в массив данных через 1 строку после "Доп. информация"
 //                    if (it1!!.contains("Доп. информация")) {
 //                        print("!!!!")
 //                        flag = true

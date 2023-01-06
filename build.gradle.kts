@@ -23,5 +23,5 @@ application {
 }
 dependencies{
 //    implementation("com.opencsv:opencsv:5.7.1")
-    implementation("com.couchbase.lite:couchbase-lite-java:3.0.0")
+    implementation("com.couchbase.lite:couchbase-lite-java:3.0.5")
 }
