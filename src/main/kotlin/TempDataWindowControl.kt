@@ -4,16 +4,19 @@ import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
 import javafx.fxml.FXML
+import javafx.fxml.Initializable
+import javafx.scene.control.ComboBox
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableView
 import javafx.scene.layout.BorderPane
 import javafx.stage.FileChooser
 import java.io.*
+import java.net.URL
 import java.nio.file.Paths
 import java.util.*
 
 
-class TempDataWindowControl {
+class TempDataWindowControl : Initializable{
 
     lateinit var timeCol: TableColumn<Map<String, StringProperty>, String>
 //    lateinit var timeCol: TableColumn<List<StringProperty>, String>
@@ -22,10 +25,11 @@ class TempDataWindowControl {
 //    lateinit var dateCol: TableColumn<List<StringProperty>, String>
 
     @FXML lateinit var table: TableView<Map<String, StringProperty>>
-    @FXML
+    @FXML lateinit var yearsList: ComboBox<Any>
 //    lateinit var table: TableView<List<StringProperty>>
     lateinit var mainPane: BorderPane
     lateinit var headers: Array<String>
+    lateinit var db: DBwork
     fun openCSVfile(actionEvent: ActionEvent) {
         println("open file")
         val fileChooser = FileChooser().apply {
@@ -57,8 +61,6 @@ class TempDataWindowControl {
 //        }
         val dbObject = DBwork()
         dbObject.writeToDB(headers, records)
-        //todo сделать в интерфейсе выпадающие списки с выбором года, месяца, числа
-        //и потом показом нужных записей из БД
         println("size = ${records.size}")
     }
 
@@ -89,29 +91,9 @@ class TempDataWindowControl {
 
     }
 
-    //    private fun generateTableViewRows(): ObservableList<ArrayList<String>> {
-//        val max = 6
-//        val tableViewRows: ObservableList<ArrayList<String>> = FXCollections.observableArrayList()
-//        for (i in 1 until max) {
-//            val dataRow = ArrayList<String>()
-//            val value1 = "GREEN"
-//            val value2 = "A$i"
-//            val value3 = "B$i"
-//            dataRow.add(value1)
-//            dataRow.add(value2)
-//            dataRow.add(value3)
-//            tableViewRows.add(dataRow)
-//        }
-//        return tableViewRows
-//    }
-//    private fun buildCallbackColor(index: Int): Callback<TableColumn.CellDataFeatures<ArrayList<*>, Any?>, ObservableValue<Any?>?> {
-//        return Callback<TableColumn.CellDataFeatures<ArrayList<*>, Any?>, ObservableValue<Any?>?> { param ->
-//            SimpleObjectProperty(
-//                param.value[index]
-//            )
-//        }
-//    }
-    fun addColumn(actionEvent: ActionEvent) {
+    fun showData(actionEvent: ActionEvent) {
+        //todo берем год из комбо-бокса, запрашиваем данные с этим годом из БД и выводим в таблицу
+        //потом доделать для месяца и дня
         val col= TableColumn<Map<String, StringProperty>, String>("temp 1")
 //        val col = TableColumn<List<StringProperty>, String>("temp 1")
         col.minWidth = 80.0
@@ -163,6 +145,20 @@ class TempDataWindowControl {
         secondRow.add(1, SimpleStringProperty("11:12"))
         secondRow.add(2, SimpleStringProperty("102"))
         data.addAll(firstRow, secondRow)
+    }
+
+    override fun initialize(location: URL?, resources: ResourceBundle?) {
+        println("Start!!")
+        db = DBwork()
+        println("db size = ${db.dbSize()}")
+        val years = db.getYears()
+        yearsList.items.addAll(years)
+    }
+
+    fun yearSelect(actionEvent: ActionEvent) {
+        val year = yearsList.selectionModel.selectedItem as String
+        println("year = $year")
+        db.showRecordsForYear(year, table)
     }
 
 //    fun readCSVfromFile(file: File): ArrayList<List<String?>> {

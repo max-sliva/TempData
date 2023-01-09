@@ -5,7 +5,7 @@
 
 <BorderPane fx:id="mainPane" prefHeight="397.0" prefWidth="601.0" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="TempDataWindowControl">
    <top>
-      <HBox BorderPane.alignment="CENTER">
+      <HBox spacing="10.0" BorderPane.alignment="CENTER">
          <children>
             <MenuBar>
               <menus>
@@ -27,7 +27,10 @@
                 </Menu>
               </menus>
             </MenuBar>
-            <Button mnemonicParsing="false" onAction="#addColumn" text="Add column" />
+            <ComboBox fx:id="yearsList" onAction="#yearSelect" prefHeight="26.0" prefWidth="94.0" promptText="Year" />
+            <ComboBox prefHeight="26.0" prefWidth="101.0" promptText="Month" />
+            <DatePicker prefHeight="26.0" prefWidth="117.0" />
+            <Button mnemonicParsing="false" onAction="#showData" text="Show" />
          </children>
       </HBox>
    </top>

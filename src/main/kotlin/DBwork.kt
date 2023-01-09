@@ -1,4 +1,6 @@
 import com.couchbase.lite.*
+import javafx.beans.property.StringProperty
+import javafx.scene.control.TableView
 
 
 class DBwork {
@@ -39,15 +41,42 @@ class DBwork {
         return str
     }
 
-    fun matrixArrayToString(matrixArray: Array<String>): String{
-        var str = """{"device": "matrix", "matrixType": "all", "matrixArray": ["""
-        matrixArray.forEach { str +=  """"$it","""}
-        str = str.replaceRange(str.length-1, str.length, "]}")
+    fun dbSize(): Int {
+        var k = 0
+        val listQuery = QueryBuilder.select(SelectResult.all())
+            .from(DataSource.database(database))
+        k = listQuery.execute().count()
+        return k
+    }
+    fun readFromDB(){
 
-        return  str
     }
 
-    fun readFromDB(){
+    fun getYears(): MutableSet<String> {
+        val listQuery = QueryBuilder.select(SelectResult.all())
+            .from(DataSource.database(database))
+//        .where(Expression.property("date").equalTo(Expression.string("SDK")))
+        val datesSet = mutableSetOf<String>()
+        for (result in listQuery.execute().allResults()) {
+                datesSet.add(result.getDictionary(0)?.getString("Date")?.takeLast(4)+"")
+        }
+        println("datesSet = $datesSet")
+        return datesSet
+    }
+
+    fun showRecordsForYear(year: String, table: TableView<Map<String, StringProperty>>) {
+        println("results for $year")
+        val listQuery = QueryBuilder.select(SelectResult.all())
+            .from(DataSource.database(database))
+//        .where(Expression.property("date").regex(Expression.string("\\b$year\\b")))
+        for (result in listQuery.execute().allResults()) {
+            if (result.getDictionary(0)?.getString("Date")!!.contains(year)) {
+                for (k in result.getDictionary(0)!!.keys) {
+                    print(k + " : " + result.getDictionary(0)!!.getString(k) + " ")
+                }
+                println()
+            }
+        }
 
     }
 }
