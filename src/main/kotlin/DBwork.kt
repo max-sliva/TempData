@@ -1,5 +1,8 @@
 import com.couchbase.lite.*
+import javafx.beans.property.SimpleStringProperty
 import javafx.beans.property.StringProperty
+import javafx.collections.FXCollections
+import javafx.collections.ObservableList
 import javafx.scene.control.TableView
 
 
@@ -64,20 +67,29 @@ class DBwork {
         return datesSet
     }
 
-    fun showRecordsForYear(year: String, table: TableView<Map<String, StringProperty>>) {
+    fun getRecordsForYear(year: String, table: TableView<Map<String, StringProperty>>? = null): ObservableList<Map<String, StringProperty>> {
         println("results for $year")
+        val data : ObservableList<Map<String, StringProperty>> = FXCollections.observableArrayList()
         val listQuery = QueryBuilder.select(SelectResult.all())
             .from(DataSource.database(database))
 //        .where(Expression.property("date").regex(Expression.string("\\b$year\\b")))
         for (result in listQuery.execute().allResults()) {
-            if (result.getDictionary(0)?.getString("Date")!!.contains(year)) {
+            val dataMap = mutableMapOf<String, StringProperty>()
+            if (year!="0" && result.getDictionary(0)?.getString("Date")!!.contains(year)) {
                 for (k in result.getDictionary(0)!!.keys) {
-                    print(k + " : " + result.getDictionary(0)!!.getString(k) + " ")
+//                    print(k + " : " + result.getDictionary(0)!!.getString(k) + " ")
+                    dataMap[k] = SimpleStringProperty(result.getDictionary(0)!!.getString(k).toString())
                 }
-                println()
+                data.add(dataMap)
+//                println()
+            } else if (year == "0"){
+                for (k in result.getDictionary(0)!!.keys) {
+                    dataMap[k] = SimpleStringProperty(result.getDictionary(0)!!.getString(k).toString())
+                }
+                data.add(dataMap)
             }
         }
-
+        return data
     }
 }
 

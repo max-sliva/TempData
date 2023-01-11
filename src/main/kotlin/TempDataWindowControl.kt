@@ -30,6 +30,7 @@ class TempDataWindowControl : Initializable{
     lateinit var mainPane: BorderPane
     lateinit var headers: Array<String>
     lateinit var db: DBwork
+    var year = "0"
     fun openCSVfile(actionEvent: ActionEvent) {
         println("open file")
         val fileChooser = FileChooser().apply {
@@ -90,9 +91,31 @@ class TempDataWindowControl : Initializable{
     fun showTable(actionEvent: ActionEvent) {
 
     }
-
     fun showData(actionEvent: ActionEvent) {
+        table.items.clear()
+        table.columns.clear()
         //todo берем год из комбо-бокса, запрашиваем данные с этим годом из БД и выводим в таблицу
+        dateCol.setCellValueFactory { data -> data.value["Date"] }
+        timeCol.setCellValueFactory { data -> data.value["Time"] }
+        val data = db.getRecordsForYear(year)
+//        println("keys = ${data[0].keys}")
+        var keys = data[0].keys.sorted()
+        keys = keys.minusElement("Date")
+        keys = keys.minusElement("Time")
+        println("keys = $keys")
+        table.columns.addAll(dateCol, timeCol)
+        keys.forEach {
+            val col= TableColumn<Map<String, StringProperty>, String>(it)
+            col.minWidth = 80.0
+            table.columns.add(col)
+            col.setCellValueFactory { data -> data.value[it] }
+        }
+        table.items.addAll(data)
+        println("data size = ${data.size}")
+    }
+    fun showData1(actionEvent: ActionEvent) {
+
+
         //потом доделать для месяца и дня
         val col= TableColumn<Map<String, StringProperty>, String>("temp 1")
 //        val col = TableColumn<List<StringProperty>, String>("temp 1")
@@ -152,13 +175,15 @@ class TempDataWindowControl : Initializable{
         db = DBwork()
         println("db size = ${db.dbSize()}")
         val years = db.getYears()
+        yearsList.items.add(" ")
         yearsList.items.addAll(years)
     }
 
     fun yearSelect(actionEvent: ActionEvent) {
-        val year = yearsList.selectionModel.selectedItem as String
+        year = yearsList.selectionModel.selectedItem as String
         println("year = $year")
-        db.showRecordsForYear(year, table)
+        if (year == " ") year = "0"
+//        db.showRecordsForYear(year, table)
     }
 
 //    fun readCSVfromFile(file: File): ArrayList<List<String?>> {
