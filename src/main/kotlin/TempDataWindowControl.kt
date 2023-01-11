@@ -94,7 +94,7 @@ class TempDataWindowControl : Initializable{
     fun showData(actionEvent: ActionEvent) {
         table.items.clear()
         table.columns.clear()
-        //todo берем год из комбо-бокса, запрашиваем данные с этим годом из БД и выводим в таблицу
+        //todo добавить фильтр оп месяцу и дню месяца
         dateCol.setCellValueFactory { data -> data.value["Date"] }
         timeCol.setCellValueFactory { data -> data.value["Time"] }
         val data = db.getRecordsForYear(year)
@@ -112,40 +112,6 @@ class TempDataWindowControl : Initializable{
         }
         table.items.addAll(data)
         println("data size = ${data.size}")
-    }
-    fun showData1(actionEvent: ActionEvent) {
-
-
-        //потом доделать для месяца и дня
-        val col= TableColumn<Map<String, StringProperty>, String>("temp 1")
-//        val col = TableColumn<List<StringProperty>, String>("temp 1")
-        col.minWidth = 80.0
-
-        table.columns.add(col)
-//        dateCol.setCellValueFactory { data -> data.value[0] }
-//        timeCol.setCellValueFactory { data -> data.value[1] }
-//        col.setCellValueFactory { data -> data.value[2] }
-        dateCol.setCellValueFactory { data ->
-            data.value["date"]
-        }
-        timeCol.setCellValueFactory { data -> data.value["time"] }
-        col.setCellValueFactory { data -> data.value["temp 1"] }
-
-//        val data: ObservableList<List<StringProperty>> = FXCollections.observableArrayList()
-        val data: ObservableList<Map<String, StringProperty>> = FXCollections.observableArrayList()
-        fillData(data)
-//        fillData1(data)
-//        val firstRow = ArrayList<StringProperty>(3)
-//        firstRow.add(0, SimpleStringProperty("31/12/2002"))
-//        firstRow.add(1,  SimpleStringProperty("10:12"))
-//        firstRow.add(2, SimpleStringProperty("100"))
-//
-//        val secondRow = ArrayList<StringProperty>(3)
-//        secondRow.add(0, SimpleStringProperty("30/1/2012"))
-//        secondRow.add(1, SimpleStringProperty("11:12"))
-//        secondRow.add(2, SimpleStringProperty("101"))
-//        data.addAll(firstRow, secondRow)
-        table.items.addAll(data)
     }
 
     fun fillData(data: ObservableList<Map<String, StringProperty>>){
@@ -186,27 +152,4 @@ class TempDataWindowControl : Initializable{
 //        db.showRecordsForYear(year, table)
     }
 
-//    fun readCSVfromFile(file: File): ArrayList<List<String?>> {
-//        var i = 0
-//        var flag = false
-//        val records: ArrayList<List<String?>> = ArrayList()
-//        CSVReader(InputStreamReader(FileInputStream(file.name), "CP1251")).use { csvReader ->
-//            var values: Array<String?>? = null
-//            while (csvReader.readNext().also { values = it } != null) {
-//                if (i >= 2) records.add(values!!.asList())
-//                if (flag) i++
-////                println(values)
-//                values!!.forEach { it1 ->
-////                    print(it1)
-//                    if (it1!!.contains("Доп. информация")) {
-//                        print("!!!!")
-//                        flag = true
-//                        i++
-//                    }
-//                }
-////                println()
-//            }
-//        }
-//        return records
-//    }
 }

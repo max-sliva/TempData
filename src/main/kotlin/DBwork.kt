@@ -55,6 +55,13 @@ class DBwork {
 
     }
 
+    fun getMonthsForYear(year: String): MutableSet<String> {
+        val monthsSet = mutableSetOf<String>()
+        //todo дописать ф-ию для получения всех месяцев по выбранному году
+
+        return monthsSet
+    }
+
     fun getYears(): MutableSet<String> {
         val listQuery = QueryBuilder.select(SelectResult.all())
             .from(DataSource.database(database))
