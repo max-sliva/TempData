@@ -28,7 +28,7 @@
               </menus>
             </MenuBar>
             <ComboBox fx:id="yearsList" onAction="#yearSelect" prefHeight="26.0" prefWidth="94.0" promptText="Year" />
-            <ComboBox prefHeight="26.0" prefWidth="101.0" promptText="Month" />
+            <ComboBox fx:id="monthsList" prefHeight="26.0" prefWidth="101.0" promptText="Month" />
             <DatePicker prefHeight="26.0" prefWidth="117.0" />
             <Button mnemonicParsing="false" onAction="#showData" text="Show" />
          </children>

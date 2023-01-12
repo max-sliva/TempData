@@ -18,6 +18,7 @@ import java.util.*
 
 class TempDataWindowControl : Initializable{
 
+    lateinit var monthsList: ComboBox<Any>
     lateinit var timeCol: TableColumn<Map<String, StringProperty>, String>
 //    lateinit var timeCol: TableColumn<List<StringProperty>, String>
 
@@ -94,10 +95,10 @@ class TempDataWindowControl : Initializable{
     fun showData(actionEvent: ActionEvent) {
         table.items.clear()
         table.columns.clear()
-        //todo добавить фильтр оп месяцу и дню месяца
         dateCol.setCellValueFactory { data -> data.value["Date"] }
         timeCol.setCellValueFactory { data -> data.value["Time"] }
         val data = db.getRecordsForYear(year)
+        //todo добавить фильтр оп месяцу и дню месяца
 //        println("keys = ${data[0].keys}")
         var keys = data[0].keys.sorted()
         keys = keys.minusElement("Date")
@@ -149,6 +150,10 @@ class TempDataWindowControl : Initializable{
         year = yearsList.selectionModel.selectedItem as String
         println("year = $year")
         if (year == " ") year = "0"
+        val months = db.getMonthsForYear(year).sorted()
+        println("months = $months")
+        monthsList.items.clear()
+        monthsList.items.addAll(months)
 //        db.showRecordsForYear(year, table)
     }
 

@@ -57,8 +57,11 @@ class DBwork {
 
     fun getMonthsForYear(year: String): MutableSet<String> {
         val monthsSet = mutableSetOf<String>()
-        //todo дописать ф-ию для получения всех месяцев по выбранному году
-
+        val recordsWithYear = getRecordsForYear(year)
+        for (record in recordsWithYear){
+            monthsSet.add(record["Date"].toString().split(".")[1]+" ")
+        }
+//        println()
         return monthsSet
     }
 
