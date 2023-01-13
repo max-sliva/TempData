@@ -32,6 +32,7 @@ class TempDataWindowControl : Initializable{
     lateinit var headers: Array<String>
     lateinit var db: DBwork
     var year = "0"
+    var month = "0"
     fun openCSVfile(actionEvent: ActionEvent) {
         println("open file")
         val fileChooser = FileChooser().apply {
@@ -97,8 +98,11 @@ class TempDataWindowControl : Initializable{
         table.columns.clear()
         dateCol.setCellValueFactory { data -> data.value["Date"] }
         timeCol.setCellValueFactory { data -> data.value["Time"] }
-        val data = db.getRecordsForYear(year)
-        //todo добавить фильтр оп месяцу и дню месяца
+//        val data = db.getRecordsForYear(year)
+        //todo добавить фильтр по дню месяца
+        var data: ObservableList<Map<String, StringProperty>>
+        data = if (monthsList.value!=null && month!="0") db.getRecordsForMonthAndYear(year, monthsList.value.toString())
+                                            else db.getRecordsForYear(year)
 //        println("keys = ${data[0].keys}")
         var keys = data[0].keys.sorted()
         keys = keys.minusElement("Date")
@@ -144,6 +148,7 @@ class TempDataWindowControl : Initializable{
         val years = db.getYears()
         yearsList.items.add(" ")
         yearsList.items.addAll(years)
+        monthsList.items.add(" ")
     }
 
     fun yearSelect(actionEvent: ActionEvent) {
@@ -153,8 +158,15 @@ class TempDataWindowControl : Initializable{
         val months = db.getMonthsForYear(year).sorted()
         println("months = $months")
         monthsList.items.clear()
+        monthsList.items.add(" ")
         monthsList.items.addAll(months)
 //        db.showRecordsForYear(year, table)
+    }
+
+    fun monthSelect(actionEvent: ActionEvent) {
+        month = monthsList.value.toString()
+        if (month == " ") month = "0"
+        println("month = $month")
     }
 
 }

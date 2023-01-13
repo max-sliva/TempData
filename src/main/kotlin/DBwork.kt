@@ -59,7 +59,7 @@ class DBwork {
         val monthsSet = mutableSetOf<String>()
         val recordsWithYear = getRecordsForYear(year)
         for (record in recordsWithYear){
-            monthsSet.add(record["Date"].toString().split(".")[1]+" ")
+            monthsSet.add(record["Date"].toString().split(".")[1])
         }
 //        println()
         return monthsSet
@@ -75,6 +75,18 @@ class DBwork {
         }
         println("datesSet = $datesSet")
         return datesSet
+    }
+
+    fun getRecordsForMonthAndYear(year: String, month: String): ObservableList<Map<String, StringProperty>>{
+        val data : ObservableList<Map<String, StringProperty>> = FXCollections.observableArrayList()
+        val recordsWithYear = getRecordsForYear(year)
+        for (record in recordsWithYear){
+            if (record["Date"].toString().split(".")[1].contains(month)) {
+                println(record)
+                data.add(record)
+            }
+        }
+        return data
     }
 
     fun getRecordsForYear(year: String, table: TableView<Map<String, StringProperty>>? = null): ObservableList<Map<String, StringProperty>> {
