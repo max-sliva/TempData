@@ -55,6 +55,17 @@ class DBwork {
 
     }
 
+    fun getDaysForMonth(month: String, year: String): MutableSet<String> {
+        val daysSet = mutableSetOf<String>()
+        val recordsWithMonth = getRecordsForMonthAndYear(year, month)
+        println("recordsWithMonth count = ${recordsWithMonth.size}")
+        for (record in recordsWithMonth){
+            val temp = record["Date"].toString().split(".")[0].split(" ")
+            daysSet.add(temp[temp.size-1])
+        }
+        println("days count = ${daysSet.size}")
+        return daysSet
+    }
     fun getMonthsForYear(year: String): MutableSet<String> {
         val monthsSet = mutableSetOf<String>()
         val recordsWithYear = getRecordsForYear(year)
@@ -82,7 +93,7 @@ class DBwork {
         val recordsWithYear = getRecordsForYear(year)
         for (record in recordsWithYear){
             if (record["Date"].toString().split(".")[1].contains(month)) {
-                println(record)
+//                println(record)
                 data.add(record)
             }
         }
@@ -113,6 +124,7 @@ class DBwork {
         }
         return data
     }
+
 }
 
 fun main() {

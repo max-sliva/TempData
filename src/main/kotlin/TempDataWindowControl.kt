@@ -1,6 +1,5 @@
 import javafx.beans.property.SimpleStringProperty
 import javafx.beans.property.StringProperty
-import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
 import javafx.fxml.FXML
@@ -18,6 +17,7 @@ import java.util.*
 
 class TempDataWindowControl : Initializable{
 
+    lateinit var daysList: ComboBox<Any>
     lateinit var monthsList: ComboBox<Any>
     lateinit var timeCol: TableColumn<Map<String, StringProperty>, String>
 //    lateinit var timeCol: TableColumn<List<StringProperty>, String>
@@ -167,6 +167,11 @@ class TempDataWindowControl : Initializable{
         month = monthsList.value.toString()
         if (month == " ") month = "0"
         println("month = $month")
+        val days = db.getDaysForMonth(month, year).sorted()
+        println("days for month = $days")
+        daysList.items.clear()
+        daysList.items.add(" ")
+        daysList.items.addAll(days)
     }
 
 }

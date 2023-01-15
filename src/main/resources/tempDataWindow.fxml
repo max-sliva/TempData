@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane fx:id="mainPane" prefHeight="397.0" prefWidth="601.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="TempDataWindowControl">
+<BorderPane fx:id="mainPane" prefHeight="397.0" prefWidth="601.0" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="TempDataWindowControl">
    <top>
       <HBox spacing="10.0" BorderPane.alignment="CENTER">
          <children>
@@ -29,7 +29,7 @@
             </MenuBar>
             <ComboBox fx:id="yearsList" onAction="#yearSelect" prefHeight="26.0" prefWidth="94.0" promptText="Year" />
             <ComboBox fx:id="monthsList" onAction="#monthSelect" prefHeight="26.0" prefWidth="101.0" promptText="Month" />
-            <DatePicker prefHeight="26.0" prefWidth="117.0" />
+            <ComboBox fx:id="daysList" prefHeight="26.0" prefWidth="83.0" promptText="Day" />
             <Button mnemonicParsing="false" onAction="#showData" text="Show" />
          </children>
       </HBox>
