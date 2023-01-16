@@ -24,6 +24,7 @@ class DBwork {
         records.forEach {
             val jsonString = listToJSON(it, headers)
 //            println(jsonString)
+            //todo сделать проверку на существование записи с таким номером, датой и временем
             mutableDoc = MutableDocument().setJSON(jsonString)
             database.save(mutableDoc)
 //            println()

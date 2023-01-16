@@ -4,6 +4,7 @@ import javafx.collections.ObservableList
 import javafx.event.ActionEvent
 import javafx.fxml.FXML
 import javafx.fxml.Initializable
+import javafx.scene.control.Button
 import javafx.scene.control.ComboBox
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableView
@@ -17,6 +18,7 @@ import java.util.*
 
 class TempDataWindowControl : Initializable{
 
+    @FXML lateinit var showBtn: Button
     lateinit var daysList: ComboBox<Any>
     lateinit var monthsList: ComboBox<Any>
     lateinit var timeCol: TableColumn<Map<String, StringProperty>, String>
@@ -52,9 +54,17 @@ class TempDataWindowControl : Initializable{
             headers[i] = headers[i - 1]
         }
         headers[1] = "Time"
+//        headers = headers.filterNot {
+//            it.startsWith('5')
+//        }.toTypedArray()
         headers.forEach {
             print("$it ")
         }
+//        headers.forEach {
+//            if (it.startsWith('5')) headers.filterNot { it1->
+//                it.startsWith('5')
+//            }
+//        }
         println()
 //        records.forEach {
 //            it.forEach { it1 ->
@@ -65,6 +75,10 @@ class TempDataWindowControl : Initializable{
         val dbObject = DBwork()
         dbObject.writeToDB(headers, records)
         println("size = ${records.size}")
+        if (records.size > 0) {
+            showBtn.isDisable = false
+            initData(dbObject)
+        }
     }
 
     fun readCSVfromFile2(file: File): ArrayList<List<String>> {
@@ -79,6 +93,7 @@ class TempDataWindowControl : Initializable{
                 records.add(values.asList())
             }
             if (flag) i++
+                //todo добавить получение значения поля Серийный номер
             if (line.contains("Доп. информация")) {
 //                print("!!!!")
 //                println(line)
@@ -100,13 +115,15 @@ class TempDataWindowControl : Initializable{
         timeCol.setCellValueFactory { data -> data.value["Time"] }
 //        val data = db.getRecordsForYear(year)
         //todo добавить фильтр по дню месяца
-        var data: ObservableList<Map<String, StringProperty>>
-        data = if (monthsList.value!=null && month!="0") db.getRecordsForMonthAndYear(year, monthsList.value.toString())
-                                            else db.getRecordsForYear(year)
+        var data = if (monthsList.value!=null && month!="0") db.getRecordsForMonthAndYear(year, monthsList.value.toString())
+                    else db.getRecordsForYear(year)
 //        println("keys = ${data[0].keys}")
         var keys = data[0].keys.sorted()
         keys = keys.minusElement("Date")
         keys = keys.minusElement("Time")
+        keys = keys.filter {
+            it.startsWith('1')
+        }
         println("keys = $keys")
         table.columns.addAll(dateCol, timeCol)
         keys.forEach {
@@ -145,26 +162,41 @@ class TempDataWindowControl : Initializable{
         println("Start!!")
         db = DBwork()
         println("db size = ${db.dbSize()}")
-        val years = db.getYears()
-        yearsList.items.add(" ")
-        yearsList.items.addAll(years)
-        monthsList.items.add(" ")
+        initData(db)
     }
 
-    fun yearSelect(actionEvent: ActionEvent) {
-        year = yearsList.selectionModel.selectedItem as String
-        println("year = $year")
-        if (year == " ") year = "0"
-        val months = db.getMonthsForYear(year).sorted()
-        println("months = $months")
+    private fun initData(db: DBwork) {
+        val years = db.getYears()
+        if (db.dbSize() == 0) showBtn.isDisable = true
+        yearsList.items.clear()
+        yearsList.items.add(" ")
+        yearsList.items.addAll(years)
         monthsList.items.clear()
         monthsList.items.add(" ")
-        monthsList.items.addAll(months)
+        daysList.items.clear()
+    }
+
+
+    fun yearSelect(actionEvent: ActionEvent) {
+        year = yearsList?.selectionModel?.selectedItem.toString()
+        println("year = $year")
+        if (year == " ") year = "0".also {
+            monthsList.selectionModel.clearSelection()
+            monthsList.items.clear()
+            monthsList.items.add(" ")
+            monthsList.selectionModel.select(0)
+        } else {
+            val months = db.getMonthsForYear(year).sorted()
+            println("months = $months")
+            monthsList.items.clear()
+            monthsList.items.add(" ")
+            monthsList.items.addAll(months)
+        }
 //        db.showRecordsForYear(year, table)
     }
 
     fun monthSelect(actionEvent: ActionEvent) {
-        month = monthsList.value.toString()
+        month = monthsList?.value.toString()
         if (month == " ") month = "0"
         println("month = $month")
         val days = db.getDaysForMonth(month, year).sorted()
