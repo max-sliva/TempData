@@ -35,6 +35,7 @@ class TempDataWindowControl : Initializable{
     lateinit var db: DBwork
     var year = "0"
     var month = "0"
+    var day = "0"
     fun openCSVfile(actionEvent: ActionEvent) {
         println("open file")
         val fileChooser = FileChooser().apply {
@@ -114,8 +115,9 @@ class TempDataWindowControl : Initializable{
         dateCol.setCellValueFactory { data -> data.value["Date"] }
         timeCol.setCellValueFactory { data -> data.value["Time"] }
 //        val data = db.getRecordsForYear(year)
-        //todo добавить фильтр по дню месяца
-        var data = if (monthsList.value!=null && month!="0") db.getRecordsForMonthAndYear(year, monthsList.value.toString())
+        var data: ObservableList<Map<String, StringProperty>>
+        if (daysList.value!=null && day!="0") data = db.getRecordsForMonthYearAndDay(year, monthsList.value.toString(), daysList.value.toString())
+        else data = if (monthsList.value!=null && month!="0") db.getRecordsForMonthAndYear(year, monthsList.value.toString())
                     else db.getRecordsForYear(year)
 //        println("keys = ${data[0].keys}")
         var keys = data[0].keys.sorted()
@@ -163,6 +165,7 @@ class TempDataWindowControl : Initializable{
         db = DBwork()
         println("db size = ${db.dbSize()}")
         initData(db)
+        //todo сделать множественный выбор в комбобоксах
     }
 
     private fun initData(db: DBwork) {
@@ -204,6 +207,12 @@ class TempDataWindowControl : Initializable{
         daysList.items.clear()
         daysList.items.add(" ")
         daysList.items.addAll(days)
+    }
+
+    fun daySelect(actionEvent: ActionEvent) {
+        day = daysList?.value.toString()
+        if (day == " ") day = "0"
+        println("day = $day")
     }
 
 }

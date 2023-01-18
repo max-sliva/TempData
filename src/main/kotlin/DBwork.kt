@@ -126,6 +126,19 @@ class DBwork {
         return data
     }
 
+    fun getRecordsForMonthYearAndDay(year: String, month: String, day: String): ObservableList<Map<String, StringProperty>> {
+        val data : ObservableList<Map<String, StringProperty>> = FXCollections.observableArrayList()
+        val recordsWithYearAndMonth = getRecordsForMonthAndYear(year, month)
+        for (record in recordsWithYearAndMonth){
+            val temp = record["Date"].toString().split(".")[0].split(" ")
+//            daysSet.add(temp[temp.size-1])
+            if (temp[temp.size-1] == day) {
+//                println(record)
+                data.add(record)
+            }
+        }
+        return data
+    }
 }
 
 fun main() {
