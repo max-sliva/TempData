@@ -1,15 +1,18 @@
+import javafx.application.Platform
 import javafx.beans.property.SimpleStringProperty
 import javafx.beans.property.StringProperty
 import javafx.collections.ObservableList
+import javafx.concurrent.Task
 import javafx.event.ActionEvent
+import javafx.event.EventHandler
 import javafx.fxml.FXML
 import javafx.fxml.Initializable
-import javafx.scene.control.Button
-import javafx.scene.control.ComboBox
-import javafx.scene.control.TableColumn
-import javafx.scene.control.TableView
+import javafx.scene.Scene
+import javafx.scene.control.*
 import javafx.scene.layout.BorderPane
 import javafx.stage.FileChooser
+import javafx.stage.Modality
+import javafx.stage.Stage
 import java.io.*
 import java.net.URL
 import java.nio.file.Paths
@@ -18,6 +21,7 @@ import java.util.*
 
 class TempDataWindowControl : Initializable{
 
+    private var dataIsReady: Boolean = false
     @FXML lateinit var showBtn: Button
     lateinit var daysList: ComboBox<Any>
     lateinit var monthsList: ComboBox<Any>
@@ -36,18 +40,10 @@ class TempDataWindowControl : Initializable{
     var year = "0"
     var month = "0"
     var day = "0"
-    fun openCSVfile(actionEvent: ActionEvent) {
-        println("open file")
-        val fileChooser = FileChooser().apply {
-            title = "Open Excel File"
-            val currentPath: String = Paths.get(".").toAbsolutePath().normalize().toString()
-            initialDirectory = File(currentPath)
-            extensionFilters.addAll(
-                FileChooser.ExtensionFilter("CSV Files", "*.csv"),
-                FileChooser.ExtensionFilter("All Files", "*.*")
-            )
-        }
-        val file = fileChooser.showOpenDialog(mainPane.scene.window)
+    lateinit var serialNumber: String
+    var fileChooser = FileChooser()
+
+    fun fileWork(file: File){
         val records = readCSVfromFile2(file)
         headers[0] = "Date"
         headers = headers.plus(headers[headers.size - 1])
@@ -61,25 +57,59 @@ class TempDataWindowControl : Initializable{
         headers.forEach {
             print("$it ")
         }
-//        headers.forEach {
-//            if (it.startsWith('5')) headers.filterNot { it1->
-//                it.startsWith('5')
-//            }
-//        }
         println()
-//        records.forEach {
-//            it.forEach { it1 ->
-//                print("$it1 ")
-//            }
-//            println()
-//        }
         val dbObject = DBwork()
-        dbObject.writeToDB(headers, records)
+        dbObject.writeToDB(serialNumber, headers, records)
         println("size = ${records.size}")
         if (records.size > 0) {
             showBtn.isDisable = false
             initData(dbObject)
         }
+    }
+
+    fun createTask(function: () -> (Unit)): Task<Void> { //для запуска потока с функцией
+        val dialog = Stage()
+        dialog.title = "Work in progress"
+        dialog.initModality(Modality.APPLICATION_MODAL)
+        val bar = ProgressIndicator()
+        val pane = BorderPane()
+        pane.center = bar
+        dialog.scene = Scene(pane, 250.0, 150.0)
+        val task: Task<Void> = object : Task<Void>() {
+            @Throws(Exception::class)
+            override fun call(): Void? {
+//                val file = fileChooser.showOpenDialog(mainPane.scene.window)
+                println("progress = ${bar.progress}")
+                function()
+                println("progress = All")
+                return null
+            }
+        }
+        // bar.progressProperty().bind(task.progressProperty())
+        task.onSucceeded = EventHandler {
+            println("Done!")
+            pane.bottom = Label("Done opening file an preparing data. Please, close the window")
+            dialog.close()
+        }
+        dialog.show()
+        return task
+    }
+
+    fun openCSVfile(actionEvent: ActionEvent) {
+        dataIsReady = false
+        println("open file")
+        fileChooser = FileChooser().apply {
+            title = "Open Excel File"
+            val currentPath: String = Paths.get(".").toAbsolutePath().normalize().toString()
+            initialDirectory = File(currentPath)
+            extensionFilters.addAll(
+                FileChooser.ExtensionFilter("CSV Files", "*.csv"),
+                FileChooser.ExtensionFilter("All Files", "*.*")
+            )
+        }
+        val file = fileChooser.showOpenDialog(mainPane.scene.window)
+        val task = createTask { (::fileWork)(file) }
+        Thread(task).start()
     }
 
     fun readCSVfromFile2(file: File): ArrayList<List<String>> {
@@ -94,10 +124,12 @@ class TempDataWindowControl : Initializable{
                 records.add(values.asList())
             }
             if (flag) i++
-                //todo добавить получение значения поля Серийный номер
+            if (line.contains("Серийный номер")) {
+                serialNumber = line.split(';')[1]
+                println("serialNumber = $serialNumber")
+            }
+
             if (line.contains("Доп. информация")) {
-//                print("!!!!")
-//                println(line)
                 headers = line.split(';').dropLastWhile { it.isEmpty() }.toTypedArray()
                 flag = true
                 i++
@@ -110,42 +142,59 @@ class TempDataWindowControl : Initializable{
 
     }
     fun showData(actionEvent: ActionEvent) {
-        table.items.clear()
-        table.columns.clear()
-        dateCol.setCellValueFactory { data -> data.value["Date"] }
-        timeCol.setCellValueFactory { data -> data.value["Time"] }
+        val task = createTask(::dataWork)
+        Thread(task).start()
+    }
+
+    fun dataWork(){ //для показа данных из БД
+        Platform.runLater {
+            println("Started dataWork")
+            table.items.clear()
+            table.columns.clear()
+            dateCol.setCellValueFactory { data -> data.value["Date"] }
+            timeCol.setCellValueFactory { data -> data.value["Time"] }
 //        val data = db.getRecordsForYear(year)
-        var data: ObservableList<Map<String, StringProperty>>
-        if (daysList.value!=null && day!="0") data = db.getRecordsForMonthYearAndDay(year, monthsList.value.toString(), daysList.value.toString())
-        else data = if (monthsList.value!=null && month!="0") db.getRecordsForMonthAndYear(year, monthsList.value.toString())
-                    else db.getRecordsForYear(year)
+            var data: ObservableList<Map<String, StringProperty>>
+            if (daysList.value != null && day != "0") data =
+                db.getRecordsForMonthYearAndDay(year, monthsList.value.toString(), daysList.value.toString())
+            else data = if (monthsList.value != null && month != "0") db.getRecordsForMonthAndYear(
+                year,
+                monthsList.value.toString()
+            )
+            else db.getRecordsForYear(year)
 //        println("keys = ${data[0].keys}")
-        var keys = data[0].keys.sorted()
-        keys = keys.minusElement("Date")
-        keys = keys.minusElement("Time")
-        keys = keys.filter {
-            it.startsWith('1')
+            var keys = data[0].keys.sorted()
+            keys = keys.minusElement("Date")
+            keys = keys.minusElement("Time")
+            keys = keys.filter {//для показа только данных температуры (они начинаются с 1)
+                it.startsWith('1')
+            }
+            println("keys = $keys")
+            table.columns.addAll(dateCol, timeCol)
+            keys.forEach {
+                val col = TableColumn<Map<String, StringProperty>, String>(it)
+                col.minWidth = 80.0
+                table.columns.add(col)
+                col.setCellValueFactory { data -> data.value[it] }
+            }
+            table.items.addAll(data)
+            println("data size = ${data.size}")
         }
-        println("keys = $keys")
-        table.columns.addAll(dateCol, timeCol)
-        keys.forEach {
-            val col= TableColumn<Map<String, StringProperty>, String>(it)
-            col.minWidth = 80.0
-            table.columns.add(col)
-            col.setCellValueFactory { data -> data.value[it] }
-        }
-        table.items.addAll(data)
-        println("data size = ${data.size}")
     }
 
     fun fillData(data: ObservableList<Map<String, StringProperty>>){
-        data.addAll( mutableMapOf(Pair("date", SimpleStringProperty("10/1/2002")),
-                               Pair("time", SimpleStringProperty("11:11")),
-                               Pair("temp 1", SimpleStringProperty("3,11"))),
-                     mutableMapOf(Pair("date", SimpleStringProperty("11/11/2021")),
-                                Pair("time", SimpleStringProperty("12:10")),
-                                Pair("temp 1", SimpleStringProperty("4,3"))),
-                )
+        data.addAll(
+            mutableMapOf(
+                Pair("date", SimpleStringProperty("10/1/2002")),
+                Pair("time", SimpleStringProperty("11:11")),
+                Pair("temp 1", SimpleStringProperty("3,11"))
+            ),
+            mutableMapOf(
+                Pair("date", SimpleStringProperty("11/11/2021")),
+                Pair("time", SimpleStringProperty("12:10")),
+                Pair("temp 1", SimpleStringProperty("4,3"))
+            ),
+        )
     }
     fun fillData1(data: ObservableList<List<StringProperty>>){
         val firstRow = ArrayList<StringProperty>(3)
@@ -170,7 +219,7 @@ class TempDataWindowControl : Initializable{
 
     private fun initData(db: DBwork) {
         val years = db.getYears()
-        if (db.dbSize() == 0) showBtn.isDisable = true
+        if (db.dbSize() == 0L) showBtn.isDisable = true
         yearsList.items.clear()
         yearsList.items.add(" ")
         yearsList.items.addAll(years)
@@ -200,13 +249,20 @@ class TempDataWindowControl : Initializable{
 
     fun monthSelect(actionEvent: ActionEvent) {
         month = monthsList?.value.toString()
-        if (month == " ") month = "0"
         println("month = $month")
-        val days = db.getDaysForMonth(month, year).sorted()
-        println("days for month = $days")
-        daysList.items.clear()
-        daysList.items.add(" ")
-        daysList.items.addAll(days)
+        if (month == " ") month = "0".also {
+            daysList.selectionModel.clearSelection()
+            daysList.items.clear()
+            daysList.items.add(" ")
+            daysList.selectionModel.select(0)
+        }
+        else {
+            val days = db.getDaysForMonth(month, year).sorted()
+            println("days for month = $days")
+            daysList.items.clear()
+            daysList.items.add(" ")
+            daysList.items.addAll(days)
+        }
     }
 
     fun daySelect(actionEvent: ActionEvent) {

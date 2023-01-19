@@ -20,7 +20,8 @@ class DBwork {
     fun writeToDB(record:  HashMap<String, String>){
 
     }
-    fun writeToDB(headers: Array<String>, records: ArrayList<List<String>>) {
+    fun writeToDB(serialNumber: String, headers: Array<String>, records: ArrayList<List<String>>) {
+        //todo добавить к jsonString поле serialNumber
         records.forEach {
             val jsonString = listToJSON(it, headers)
 //            println(jsonString)
@@ -35,7 +36,7 @@ class DBwork {
         var i = 0
         var str = """{"""
         it.forEach { it1 ->
-            str = str +""" "${headers[i]}": "$it1","""
+            str += """ "${headers[i]}": "$it1","""
 //                    .setString("type", "SDK")
 
 //                print("${headers[i]}: $it1 ")
@@ -45,12 +46,12 @@ class DBwork {
         return str
     }
 
-    fun dbSize(): Int {
-        var k = 0
-        val listQuery = QueryBuilder.select(SelectResult.all())
-            .from(DataSource.database(database))
-        k = listQuery.execute().count()
-        return k
+    fun dbSize(): Long {
+//        var k = 0
+//        val listQuery = QueryBuilder.select(SelectResult.all())
+//            .from(DataSource.database(database))
+//        k = listQuery.execute().count()
+        return database.count
     }
     fun readFromDB(){
 
@@ -170,5 +171,6 @@ fun main() {
         println()
     }
     println("db records = $i")
+    println("db count = ${database.count}")
 
 }
