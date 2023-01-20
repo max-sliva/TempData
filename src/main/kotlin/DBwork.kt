@@ -21,20 +21,22 @@ class DBwork {
 
     }
     fun writeToDB(serialNumber: String, headers: Array<String>, records: ArrayList<List<String>>) {
-        //todo добавить к jsonString поле serialNumber
+        var i = 0
         records.forEach {
-            val jsonString = listToJSON(it, headers)
+            val jsonString = listToJSON(serialNumber, it, headers)
 //            println(jsonString)
             //todo сделать проверку на существование записи с таким номером, датой и временем
             mutableDoc = MutableDocument().setJSON(jsonString)
             database.save(mutableDoc)
+            i++
 //            println()
         }
+        println("added $i records")
     }
 
-    private fun listToJSON(it: List<String>, headers: Array<String>): String {
+    private fun listToJSON(serialNumber: String, it: List<String>, headers: Array<String>): String {
         var i = 0
-        var str = """{"""
+        var str = """{"SerialNumber": "$serialNumber", """
         it.forEach { it1 ->
             str += """ "${headers[i]}": "$it1","""
 //                    .setString("type", "SDK")
@@ -78,6 +80,17 @@ class DBwork {
         return monthsSet
     }
 
+    fun getSerialNumbers(): MutableSet<String> {
+        val listQuery = QueryBuilder.select(SelectResult.all())
+            .from(DataSource.database(database))
+        val serialNumbersSet = mutableSetOf<String>()
+        for (record in listQuery.execute().allResults()){
+            serialNumbersSet.add(record.getDictionary(0)?.getString("SerialNumber")!!)
+        }
+        println("datesSet with serial numbers  = $serialNumbersSet")
+        return serialNumbersSet
+    }
+
     fun getYears(): MutableSet<String> {
         val listQuery = QueryBuilder.select(SelectResult.all())
             .from(DataSource.database(database))
@@ -102,6 +115,7 @@ class DBwork {
         return data
     }
 
+    //todo добавить параметр для SerialNumber
     fun getRecordsForYear(year: String, table: TableView<Map<String, StringProperty>>? = null): ObservableList<Map<String, StringProperty>> {
         println("results for $year")
         val data : ObservableList<Map<String, StringProperty>> = FXCollections.observableArrayList()

@@ -13,6 +13,7 @@ import javafx.scene.layout.BorderPane
 import javafx.stage.FileChooser
 import javafx.stage.Modality
 import javafx.stage.Stage
+import javafx.stage.StageStyle
 import java.io.*
 import java.net.URL
 import java.nio.file.Paths
@@ -21,6 +22,7 @@ import java.util.*
 
 class TempDataWindowControl : Initializable{
 
+    lateinit var placesList: ComboBox<Any>
     private var dataIsReady: Boolean = false
     @FXML lateinit var showBtn: Button
     lateinit var daysList: ComboBox<Any>
@@ -68,13 +70,13 @@ class TempDataWindowControl : Initializable{
     }
 
     fun createTask(function: () -> (Unit)): Task<Void> { //для запуска потока с функцией
-        val dialog = Stage()
+        val dialog = Stage(StageStyle.UNDECORATED)
         dialog.title = "Work in progress"
         dialog.initModality(Modality.APPLICATION_MODAL)
         val bar = ProgressIndicator()
         val pane = BorderPane()
         pane.center = bar
-        dialog.scene = Scene(pane, 250.0, 150.0)
+        dialog.scene = Scene(pane, 350.0, 150.0)
         val task: Task<Void> = object : Task<Void>() {
             @Throws(Exception::class)
             override fun call(): Void? {
@@ -91,7 +93,7 @@ class TempDataWindowControl : Initializable{
             pane.bottom = Label("Done opening file an preparing data. Please, close the window")
             dialog.close()
         }
-        dialog.show()
+        dialog.show().apply {  }
         return task
     }
 
@@ -220,6 +222,12 @@ class TempDataWindowControl : Initializable{
     private fun initData(db: DBwork) {
         val years = db.getYears()
         if (db.dbSize() == 0L) showBtn.isDisable = true
+        //todo добавить вывод serialNumber в таблицу
+        val serialNumbers = db.getSerialNumbers()
+        placesList.items.clear()
+        placesList.items.add(" ")
+        placesList.items.addAll(serialNumbers)
+
         yearsList.items.clear()
         yearsList.items.add(" ")
         yearsList.items.addAll(years)
