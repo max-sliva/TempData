@@ -22,7 +22,8 @@ import java.util.*
 
 class TempDataWindowControl : Initializable{
 
-    lateinit var placesList: ComboBox<Any>
+    lateinit var serialCol: TableColumn<Map<String, StringProperty>, String>
+    lateinit var serialsList: ComboBox<Any>
     private var dataIsReady: Boolean = false
     @FXML lateinit var showBtn: Button
     lateinit var daysList: ComboBox<Any>
@@ -42,7 +43,7 @@ class TempDataWindowControl : Initializable{
     var year = "0"
     var month = "0"
     var day = "0"
-    lateinit var serialNumber: String
+    var serialNumber = "0"
     var fileChooser = FileChooser()
 
     fun fileWork(file: File){
@@ -61,6 +62,7 @@ class TempDataWindowControl : Initializable{
         }
         println()
         val dbObject = DBwork()
+
         dbObject.writeToDB(serialNumber, headers, records)
         println("size = ${records.size}")
         if (records.size > 0) {
@@ -127,7 +129,7 @@ class TempDataWindowControl : Initializable{
             }
             if (flag) i++
             if (line.contains("Серийный номер")) {
-                serialNumber = line.split(';')[1]
+                serialNumber = line.split(';')[1].trim('\\')
                 println("serialNumber = $serialNumber")
             }
 
@@ -155,16 +157,22 @@ class TempDataWindowControl : Initializable{
             table.columns.clear()
             dateCol.setCellValueFactory { data -> data.value["Date"] }
             timeCol.setCellValueFactory { data -> data.value["Time"] }
+            serialCol.setCellValueFactory { data -> data.value["SerialNumber"] }
 //        val data = db.getRecordsForYear(year)
             var data: ObservableList<Map<String, StringProperty>>
             if (daysList.value != null && day != "0") data =
-                db.getRecordsForMonthYearAndDay(year, monthsList.value.toString(), daysList.value.toString())
-            else data = if (monthsList.value != null && month != "0") db.getRecordsForMonthAndYear(
+                db.getRecordsForMonthYearAndDay(serialNumber, year, monthsList.value.toString(), daysList.value.toString())
+            else if (monthsList.value != null && month != "0") data = db.getRecordsForMonthAndYear(
+                serialNumber,
                 year,
                 monthsList.value.toString()
             )
-            else db.getRecordsForYear(year)
+            else {
+                data = if (yearsList.value != null && year != "0") db.getRecordsForYearAndSerialNumber(year, serialNumber)
+                else db.getRecordsForSerialNumber(serialNumber)
+            }
 //        println("keys = ${data[0].keys}")
+            println("serialNumber = $serialNumber")
             var keys = data[0].keys.sorted()
             keys = keys.minusElement("Date")
             keys = keys.minusElement("Time")
@@ -172,7 +180,7 @@ class TempDataWindowControl : Initializable{
                 it.startsWith('1')
             }
             println("keys = $keys")
-            table.columns.addAll(dateCol, timeCol)
+            table.columns.addAll(dateCol, timeCol, serialCol)
             keys.forEach {
                 val col = TableColumn<Map<String, StringProperty>, String>(it)
                 col.minWidth = 80.0
@@ -220,13 +228,12 @@ class TempDataWindowControl : Initializable{
     }
 
     private fun initData(db: DBwork) {
-        val years = db.getYears()
+        val years = db.getYearsForSerialNumber(serialNumber)
         if (db.dbSize() == 0L) showBtn.isDisable = true
-        //todo добавить вывод serialNumber в таблицу
         val serialNumbers = db.getSerialNumbers()
-        placesList.items.clear()
-        placesList.items.add(" ")
-        placesList.items.addAll(serialNumbers)
+        serialsList.items.clear()
+        serialsList.items.add(" ")
+        serialsList.items.addAll(serialNumbers)
 
         yearsList.items.clear()
         yearsList.items.add(" ")
@@ -246,7 +253,7 @@ class TempDataWindowControl : Initializable{
             monthsList.items.add(" ")
             monthsList.selectionModel.select(0)
         } else {
-            val months = db.getMonthsForYear(year).sorted()
+            val months = db.getMonthsForYear(year, serialNumber).sorted()
             println("months = $months")
             monthsList.items.clear()
             monthsList.items.add(" ")
@@ -265,7 +272,7 @@ class TempDataWindowControl : Initializable{
             daysList.selectionModel.select(0)
         }
         else {
-            val days = db.getDaysForMonth(month, year).sorted()
+            val days = db.getDaysForMonth(month, year, serialNumber).sorted()
             println("days for month = $days")
             daysList.items.clear()
             daysList.items.add(" ")
@@ -277,6 +284,23 @@ class TempDataWindowControl : Initializable{
         day = daysList?.value.toString()
         if (day == " ") day = "0"
         println("day = $day")
+    }
+
+    fun serialNumberSelect(actionEvent: ActionEvent) {
+        serialNumber = serialsList?.selectionModel?.selectedItem.toString()
+        println("serialNumber = $serialNumber")
+        if (serialNumber == " ") serialNumber = "0".also {
+            yearsList.selectionModel.clearSelection()
+            yearsList.items.clear()
+            yearsList.items.add(" ")
+            yearsList.selectionModel.select(0)
+        } else {
+            val years = db.getYearsForSerialNumber(serialNumber).sorted()
+            println("years = $years")
+            yearsList.items.clear()
+            yearsList.items.add(" ")
+            yearsList.items.addAll(years)
+        }
     }
 
 }

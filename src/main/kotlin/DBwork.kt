@@ -3,7 +3,6 @@ import javafx.beans.property.SimpleStringProperty
 import javafx.beans.property.StringProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
-import javafx.scene.control.TableView
 
 
 class DBwork {
@@ -59,9 +58,9 @@ class DBwork {
 
     }
 
-    fun getDaysForMonth(month: String, year: String): MutableSet<String> {
+    fun getDaysForMonth(month: String, year: String, serialNumber: String): MutableSet<String> {
         val daysSet = mutableSetOf<String>()
-        val recordsWithMonth = getRecordsForMonthAndYear(year, month)
+        val recordsWithMonth = getRecordsForMonthAndYear(serialNumber, year, month)
         println("recordsWithMonth count = ${recordsWithMonth.size}")
         for (record in recordsWithMonth){
             val temp = record["Date"].toString().split(".")[0].split(" ")
@@ -70,9 +69,9 @@ class DBwork {
         println("days count = ${daysSet.size}")
         return daysSet
     }
-    fun getMonthsForYear(year: String): MutableSet<String> {
+    fun getMonthsForYear(year: String, serialNumber: String): MutableSet<String> {
         val monthsSet = mutableSetOf<String>()
-        val recordsWithYear = getRecordsForYear(year)
+        val recordsWithYear = getRecordsForYearAndSerialNumber(year, serialNumber)
         for (record in recordsWithYear){
             monthsSet.add(record["Date"].toString().split(".")[1])
         }
@@ -91,21 +90,19 @@ class DBwork {
         return serialNumbersSet
     }
 
-    fun getYears(): MutableSet<String> {
-        val listQuery = QueryBuilder.select(SelectResult.all())
-            .from(DataSource.database(database))
-//        .where(Expression.property("date").equalTo(Expression.string("SDK")))
-        val datesSet = mutableSetOf<String>()
-        for (result in listQuery.execute().allResults()) {
-                datesSet.add(result.getDictionary(0)?.getString("Date")?.takeLast(4)+"")
+    fun getYearsForSerialNumber(serialNumber: String): MutableSet<String> {
+        val yearsSet = mutableSetOf<String>()
+        val recordsWithSerialNumber = getRecordsForSerialNumber(serialNumber)
+        for (result in recordsWithSerialNumber) {
+            yearsSet.add(result["Date"].toString().split(".").last().dropLast(1))    //.takeLast(4)+"")
         }
-        println("datesSet = $datesSet")
-        return datesSet
+        println("yearsSet = $yearsSet")
+        return yearsSet
     }
 
-    fun getRecordsForMonthAndYear(year: String, month: String): ObservableList<Map<String, StringProperty>>{
+    fun getRecordsForMonthAndYear(serialNumber: String, year: String, month: String): ObservableList<Map<String, StringProperty>>{
         val data : ObservableList<Map<String, StringProperty>> = FXCollections.observableArrayList()
-        val recordsWithYear = getRecordsForYear(year)
+        val recordsWithYear = getRecordsForYearAndSerialNumber(year, serialNumber)
         for (record in recordsWithYear){
             if (record["Date"].toString().split(".")[1].contains(month)) {
 //                println(record)
@@ -115,35 +112,70 @@ class DBwork {
         return data
     }
 
-    //todo добавить параметр для SerialNumber
-    fun getRecordsForYear(year: String, table: TableView<Map<String, StringProperty>>? = null): ObservableList<Map<String, StringProperty>> {
-        println("results for $year")
+    fun getRecordsForSerialNumber(serialNumber: String): ObservableList<Map<String, StringProperty>>{
+        println("results for $serialNumber")
         val data : ObservableList<Map<String, StringProperty>> = FXCollections.observableArrayList()
         val listQuery = QueryBuilder.select(SelectResult.all())
             .from(DataSource.database(database))
-//        .where(Expression.property("date").regex(Expression.string("\\b$year\\b")))
         for (result in listQuery.execute().allResults()) {
             val dataMap = mutableMapOf<String, StringProperty>()
-            if (year!="0" && result.getDictionary(0)?.getString("Date")!!.contains(year)) {
+            if (serialNumber!="0" && result.getDictionary(0)?.getString("SerialNumber")!!.contains(serialNumber)) {
                 for (k in result.getDictionary(0)!!.keys) {
 //                    print(k + " : " + result.getDictionary(0)!!.getString(k) + " ")
                     dataMap[k] = SimpleStringProperty(result.getDictionary(0)!!.getString(k).toString())
                 }
                 data.add(dataMap)
 //                println()
-            } else if (year == "0"){
+            } else if (serialNumber == "0"){
                 for (k in result.getDictionary(0)!!.keys) {
                     dataMap[k] = SimpleStringProperty(result.getDictionary(0)!!.getString(k).toString())
                 }
                 data.add(dataMap)
             }
         }
+        println("data size = ${data.size}")
         return data
     }
-
-    fun getRecordsForMonthYearAndDay(year: String, month: String, day: String): ObservableList<Map<String, StringProperty>> {
+    fun getRecordsForYearAndSerialNumber(year: String, serialNumber: String): ObservableList<Map<String, StringProperty>> {
+        println("results for $year")
         val data : ObservableList<Map<String, StringProperty>> = FXCollections.observableArrayList()
-        val recordsWithYearAndMonth = getRecordsForMonthAndYear(year, month)
+        val recordsWithYear = getRecordsForSerialNumber(serialNumber)
+        for (record in recordsWithYear){
+            if (record["Date"].toString().contains(year)) {
+//                println(record)
+                data.add(record)
+            }
+        }
+        return data
+    }
+//    fun getRecordsForYearAndSerialNumber(year: String, serialNumber: String): ObservableList<Map<String, StringProperty>> {
+//        println("results for $year")
+//        val data : ObservableList<Map<String, StringProperty>> = FXCollections.observableArrayList()
+//        val listQuery = QueryBuilder.select(SelectResult.all())
+//            .from(DataSource.database(database))
+////        .where(Expression.property("date").regex(Expression.string("\\b$year\\b")))
+//        for (result in listQuery.execute().allResults()) {
+//            val dataMap = mutableMapOf<String, StringProperty>()
+//            if (year!="0" && result.getDictionary(0)?.getString("Date")!!.contains(year)) {
+//                for (k in result.getDictionary(0)!!.keys) {
+////                    print(k + " : " + result.getDictionary(0)!!.getString(k) + " ")
+//                    dataMap[k] = SimpleStringProperty(result.getDictionary(0)!!.getString(k).toString())
+//                }
+//                data.add(dataMap)
+////                println()
+//            } else if (year == "0"){
+//                for (k in result.getDictionary(0)!!.keys) {
+//                    dataMap[k] = SimpleStringProperty(result.getDictionary(0)!!.getString(k).toString())
+//                }
+//                data.add(dataMap)
+//            }
+//        }
+//        return data
+//    }
+
+    fun getRecordsForMonthYearAndDay(serialNumber: String, year: String, month: String, day: String): ObservableList<Map<String, StringProperty>> {
+        val data : ObservableList<Map<String, StringProperty>> = FXCollections.observableArrayList()
+        val recordsWithYearAndMonth = getRecordsForMonthAndYear(serialNumber, year, month)
         for (record in recordsWithYearAndMonth){
             val temp = record["Date"].toString().split(".")[0].split(" ")
 //            daysSet.add(temp[temp.size-1])
