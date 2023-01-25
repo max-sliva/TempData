@@ -3,7 +3,7 @@ import javafx.beans.property.SimpleStringProperty
 import javafx.beans.property.StringProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
-
+import org.json.JSONObject
 
 class DBwork {
     var cfg: DatabaseConfiguration
@@ -21,16 +21,37 @@ class DBwork {
     }
     fun writeToDB(serialNumber: String, headers: Array<String>, records: ArrayList<List<String>>) {
         var i = 0
+        var j = 0
+        val recordsWithSerialNumber = getRecordsForSerialNumber(serialNumber)
         records.forEach {
-            val jsonString = listToJSON(serialNumber, it, headers)
 //            println(jsonString)
-            //todo сделать проверку на существование записи с таким номером, датой и временем
-            mutableDoc = MutableDocument().setJSON(jsonString)
-            database.save(mutableDoc)
-            i++
+            val jsonString = listToJSON(serialNumber, it, headers)
+            if (!isRecordInDB(jsonString, recordsWithSerialNumber)){
+                mutableDoc = MutableDocument().setJSON(jsonString)
+                database.save(mutableDoc)
+                i++
+            }
+            else j++
 //            println()
         }
-        println("added $i records")
+        println("added $i records, already in db $j records")
+    }
+
+    private fun isRecordInDB(jsonString: String, recordsWithSerialNumber: ObservableList<Map<String, StringProperty>>): Boolean {
+        val jresponse = JSONObject(jsonString)
+        val serialNumber = jresponse.getString("SerialNumber")
+        val date = jresponse.getString("Date")
+        val time = jresponse.getString("Time")
+//        println("serial number = $serialNumber date = $date time = $time")
+        for (record in recordsWithSerialNumber){
+//            println("in db date = ${record["Date"]} time = ${record["Time"]}")
+            if (record["Date"].toString().contains(date) && record["Time"].toString().contains(time)) {
+//                println(record)
+                //println("record already in db")
+                return true
+            }
+        }
+        return false
     }
 
     private fun listToJSON(serialNumber: String, it: List<String>, headers: Array<String>): String {
