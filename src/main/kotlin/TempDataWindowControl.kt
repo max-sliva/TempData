@@ -234,15 +234,25 @@ class TempDataWindowControl : Initializable{
         db = DBwork()
         println("db size = ${db.dbSize()}")
         serialsList2 = CheckComboBox<String>().apply {title = "Serials" }
+        serialsList2.addEventHandler(ComboBox.ON_HIDDEN) { event ->
+            println("${(event.source as CheckComboBox<String>).title} is now hidden.")
+        }
         yearsList2 = CheckComboBox<String>().apply {title = "Years" }
         yearsList2.checkModel.checkedItems.addListener(ListChangeListener<String?> { c -> clearList(c, yearsList2) })
-        yearsList2.addEventHandler(ComboBox.ON_HIDDEN) { event -> //todo сделать общую функцию для определения закрытия комбобокса
+        yearsList2.addEventHandler(ComboBox.ON_HIDDEN) { event ->
+            //todo сделать получение месяцев выбранного года, если он один
             println("${(event.source as CheckComboBox<String>).title} is now hidden.")
         }
         monthsList2 = CheckComboBox<String>().apply {title = "Months" }
         monthsList2.checkModel.checkedItems.addListener(ListChangeListener<String?> { c -> clearList(c, monthsList2) })
+        monthsList2.addEventHandler(ComboBox.ON_HIDDEN) { event ->
+            println("${(event.source as CheckComboBox<String>).title} is now hidden.")
+        }
         daysList2 = CheckComboBox<String>().apply {title = "Days"  }
         daysList2.checkModel.checkedItems.addListener(ListChangeListener<String?> { c -> clearList(c, daysList2) })
+        daysList2.addEventHandler(ComboBox.ON_HIDDEN) { event ->
+            println("${(event.source as CheckComboBox<String>).title} is now hidden.")
+        }
         initData(db)
         initData2(db)
     }
