@@ -5,7 +5,7 @@
 
 <BorderPane fx:id="mainPane" prefHeight="397.0" prefWidth="766.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="TempDataWindowControl">
    <top>
-      <HBox spacing="10.0" BorderPane.alignment="CENTER">
+      <HBox fx:id="topPane" spacing="10.0" BorderPane.alignment="CENTER">
          <children>
             <MenuBar>
               <menus>

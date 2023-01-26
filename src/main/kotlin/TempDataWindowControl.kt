@@ -1,6 +1,7 @@
 import javafx.application.Platform
 import javafx.beans.property.SimpleStringProperty
 import javafx.beans.property.StringProperty
+import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.concurrent.Task
 import javafx.event.ActionEvent
@@ -10,10 +11,12 @@ import javafx.fxml.Initializable
 import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.layout.BorderPane
+import javafx.scene.layout.HBox
 import javafx.stage.FileChooser
 import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.stage.StageStyle
+import org.controlsfx.control.CheckComboBox
 import java.io.*
 import java.net.URL
 import java.nio.file.Paths
@@ -22,12 +25,16 @@ import java.util.*
 
 class TempDataWindowControl : Initializable{
 
+    @FXML lateinit var topPane: HBox
     lateinit var serialCol: TableColumn<Map<String, StringProperty>, String>
     lateinit var serialsList: ComboBox<Any>
+    lateinit var serialsList2: CheckComboBox<String>
     private var dataIsReady: Boolean = false
-    @FXML lateinit var showBtn: Button
+    lateinit var showBtn: Button
     lateinit var daysList: ComboBox<Any>
+    lateinit var daysList2: CheckComboBox<String>
     lateinit var monthsList: ComboBox<Any>
+    lateinit var monthsList2: CheckComboBox<String>
     lateinit var timeCol: TableColumn<Map<String, StringProperty>, String>
 //    lateinit var timeCol: TableColumn<List<StringProperty>, String>
 
@@ -36,6 +43,7 @@ class TempDataWindowControl : Initializable{
 
     @FXML lateinit var table: TableView<Map<String, StringProperty>>
     @FXML lateinit var yearsList: ComboBox<Any>
+    lateinit var yearsList2: CheckComboBox<String>
 //    lateinit var table: TableView<List<StringProperty>>
     lateinit var mainPane: BorderPane
     lateinit var headers: Array<String>
@@ -68,6 +76,8 @@ class TempDataWindowControl : Initializable{
         if (records.size > 0) {
             showBtn.isDisable = false
             initData(dbObject)
+            initData2(dbObject)
+
         }
     }
 
@@ -223,8 +233,48 @@ class TempDataWindowControl : Initializable{
         println("Start!!")
         db = DBwork()
         println("db size = ${db.dbSize()}")
+        serialsList2 = CheckComboBox<String>().apply {title = "Serials" }
+        yearsList2 = CheckComboBox<String>().apply {title = "Years" }
+        yearsList2.checkModel.checkedItems.addListener(ListChangeListener<String?> { c -> clearList(c, yearsList2) })
+        yearsList2.addEventHandler(ComboBox.ON_HIDDEN) { event -> //todo сделать общую функцию для определения закрытия комбобокса
+            println("${(event.source as CheckComboBox<String>).title} is now hidden.")
+        }
+        monthsList2 = CheckComboBox<String>().apply {title = "Months" }
+        monthsList2.checkModel.checkedItems.addListener(ListChangeListener<String?> { c -> clearList(c, monthsList2) })
+        daysList2 = CheckComboBox<String>().apply {title = "Days"  }
+        daysList2.checkModel.checkedItems.addListener(ListChangeListener<String?> { c -> clearList(c, daysList2) })
         initData(db)
-        //todo сделать множественный выбор в комбобоксах
+        initData2(db)
+    }
+
+    private fun clearList(c: ListChangeListener.Change<out String>?, list: CheckComboBox<String>) {
+            if (c!!.list.contains(" ")) {
+//                println("Clear")
+                list.checkModel.clearChecks()
+            }
+    }
+
+    private fun initData2(db: DBwork) {
+        val years = db.getYearsForSerialNumber(serialNumber)
+        if (db.dbSize() == 0L) showBtn.isDisable = true
+        val serialNumbers = db.getSerialNumbers()
+        serialsList2.items.clear()
+        serialsList2.items.add(" ")
+        serialsList2.items.addAll(serialNumbers)
+
+        yearsList2.items.clear()
+        yearsList2.items.add(" ")
+        yearsList2.items.addAll(years)
+        monthsList2.items.clear()
+        monthsList2.items.add(" ")
+        daysList2.items.clear()
+
+//        val strings = FXCollections.observableArrayList<String>()
+//        for (i in 0..100) {
+//            strings.add("Item $i")
+//        }
+//        val checkComboBox = CheckComboBox(strings)
+        topPane.children.addAll(serialsList2, yearsList2, monthsList2, daysList2)
     }
 
     private fun initData(db: DBwork) {
