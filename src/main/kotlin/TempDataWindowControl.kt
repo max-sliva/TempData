@@ -234,8 +234,14 @@ class TempDataWindowControl : Initializable{
         db = DBwork()
         println("db size = ${db.dbSize()}")
         serialsList2 = CheckComboBox<String>().apply {title = "Serials" }
+        serialsList2.checkModel.checkedItems.addListener(ListChangeListener<String?> { c -> clearList(c, serialsList2) })
         serialsList2.addEventHandler(ComboBox.ON_HIDDEN) { event ->
             println("${(event.source as CheckComboBox<String>).title} is now hidden.")
+            if (serialsList2.checkModel.checkedItems.size==1) {
+                println("One item")
+                serialNumberSelect(ActionEvent())
+            }
+            else if (serialsList2.checkModel.checkedItems.size>1) println("Many items")
         }
         yearsList2 = CheckComboBox<String>().apply {title = "Years" }
         yearsList2.checkModel.checkedItems.addListener(ListChangeListener<String?> { c -> clearList(c, yearsList2) })
@@ -265,7 +271,7 @@ class TempDataWindowControl : Initializable{
     }
 
     private fun initData2(db: DBwork) {
-        val years = db.getYearsForSerialNumber(serialNumber)
+//        val years = db.getYearsForSerialNumber(serialNumber)
         if (db.dbSize() == 0L) showBtn.isDisable = true
         val serialNumbers = db.getSerialNumbers()
         serialsList2.items.clear()
@@ -274,7 +280,7 @@ class TempDataWindowControl : Initializable{
 
         yearsList2.items.clear()
         yearsList2.items.add(" ")
-        yearsList2.items.addAll(years)
+//        yearsList2.items.addAll(years)
         monthsList2.items.clear()
         monthsList2.items.add(" ")
         daysList2.items.clear()
@@ -347,6 +353,8 @@ class TempDataWindowControl : Initializable{
     }
 
     fun serialNumberSelect(actionEvent: ActionEvent) {
+        println("in serialNumberSelect")
+        //todo добавить работу с новыми комбо
         serialNumber = serialsList?.selectionModel?.selectedItem.toString()
         println("serialNumber = $serialNumber")
         if (serialNumber == " ") serialNumber = "0".also {
