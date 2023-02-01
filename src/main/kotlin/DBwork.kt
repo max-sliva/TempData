@@ -9,6 +9,7 @@ class DBwork {
     var cfg: DatabaseConfiguration
     var database: Database
     var mutableDoc = MutableDocument()
+    lateinit var dbRecords: List<Result>
     init {
         CouchbaseLite.init()
         println("Starting DB")
@@ -102,9 +103,11 @@ class DBwork {
 
     fun getSerialNumbers(): MutableSet<String> {
         val listQuery = QueryBuilder.select(SelectResult.all())
-            .from(DataSource.database(database))
+                        .from(DataSource.database(database))
         val serialNumbersSet = mutableSetOf<String>()
-        for (record in listQuery.execute().allResults()){
+        println("Loading from DB to dbRecords")
+        dbRecords = listQuery.execute().allResults()
+        for (record in dbRecords){
             serialNumbersSet.add(record.getDictionary(0)?.getString("SerialNumber")!!)
         }
         println("datesSet with serial numbers  = $serialNumbersSet")
@@ -136,9 +139,18 @@ class DBwork {
     fun getRecordsForSerialNumber(serialNumber: String): ObservableList<Map<String, StringProperty>>{
         println("results for $serialNumber")
         val data : ObservableList<Map<String, StringProperty>> = FXCollections.observableArrayList()
-        val listQuery = QueryBuilder.select(SelectResult.all())
-            .from(DataSource.database(database))
-        for (result in listQuery.execute().allResults()) {
+//        val listQuery = QueryBuilder.select(SelectResult.all())
+//            .from(DataSource.database(database))
+//        for (result in listQuery.execute().allResults()) {
+        try {
+           dbRecords.size
+        } catch (e: UninitializedPropertyAccessException) {
+            println("Loading from DB to dbRecords")
+            val listQuery = QueryBuilder.select(SelectResult.all())
+                .from(DataSource.database(database))
+            dbRecords = listQuery.execute().allResults()
+        }
+        for (result in dbRecords) {
             val dataMap = mutableMapOf<String, StringProperty>()
             if (serialNumber!="0" && result.getDictionary(0)?.getString("SerialNumber")!!.contains(serialNumber)) {
                 for (k in result.getDictionary(0)!!.keys) {
