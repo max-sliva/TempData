@@ -179,6 +179,7 @@ class TempDataWindowControl : Initializable {
             serialCol.setCellValueFactory { data -> data.value["SerialNumber"] }
 //        val data = db.getRecordsForYear(year)
             var data: ObservableList<Map<String, StringProperty>>
+            //todo вынести работу с выпадающими списками в отдельный класс
             if (daysList.value != null && day != "0") data =
                 db.getRecordsForMonthYearAndDay(
                     serialNumber,
