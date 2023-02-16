@@ -1,21 +1,14 @@
 import javafx.application.Platform
-import javafx.beans.property.SimpleStringProperty
 import javafx.beans.property.StringProperty
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
-import javafx.concurrent.Task
 import javafx.event.ActionEvent
-import javafx.event.EventHandler
 import javafx.fxml.FXML
 import javafx.fxml.Initializable
-import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
 import javafx.stage.FileChooser
-import javafx.stage.Modality
-import javafx.stage.Stage
-import javafx.stage.StageStyle
 import org.controlsfx.control.CheckComboBox
 import java.io.*
 import java.net.URL
@@ -89,33 +82,33 @@ class TempDataWindowControl : Initializable {
         println("FileWork finished")
     }
 
-    fun createTask(function: () -> (Unit)): Task<Void> { //для запуска потока с функцией
-        val dialog = Stage(StageStyle.UNDECORATED)
-        dialog.title = "Work in progress"
-        dialog.initModality(Modality.APPLICATION_MODAL)
-        val bar = ProgressIndicator()
-        val pane = BorderPane()
-        pane.center = bar
-        dialog.scene = Scene(pane, 350.0, 150.0)
-        val task: Task<Void> = object : Task<Void>() {
-            @Throws(Exception::class)
-            override fun call(): Void? {
-//                val file = fileChooser.showOpenDialog(mainPane.scene.window)
-                println("progress = ${bar.progress}")
-                function()
-                println("progress = All")
-                return null
-            }
-        }
-        // bar.progressProperty().bind(task.progressProperty())
-        task.onSucceeded = EventHandler {
-            println("Done!")
-            pane.bottom = Label("Done opening file an preparing data. Please, close the window")
-            dialog.close()
-        }
-        dialog.show().apply { }
-        return task
-    }
+//    fun createTask(function: () -> (Unit)): Task<Void> { //для запуска потока с функцией
+//        val dialog = Stage(StageStyle.UNDECORATED)
+//        dialog.title = "Work in progress"
+//        dialog.initModality(Modality.APPLICATION_MODAL)
+//        val bar = ProgressIndicator()
+//        val pane = BorderPane()
+//        pane.center = bar
+//        dialog.scene = Scene(pane, 350.0, 150.0)
+//        val task: Task<Void> = object : Task<Void>() {
+//            @Throws(Exception::class)
+//            override fun call(): Void? {
+////                val file = fileChooser.showOpenDialog(mainPane.scene.window)
+//                println("progress = ${bar.progress}")
+//                function()
+//                println("progress = All")
+//                return null
+//            }
+//        }
+//        // bar.progressProperty().bind(task.progressProperty())
+//        task.onSucceeded = EventHandler {
+//            println("Done!")
+//            pane.bottom = Label("Done opening file an preparing data. Please, close the window")
+//            dialog.close()
+//        }
+//        dialog.show().apply { }
+//        return task
+//    }
 
     fun openCSVfile(actionEvent: ActionEvent) {
         dataIsReady = false
@@ -160,9 +153,7 @@ class TempDataWindowControl : Initializable {
         return records
     }
 
-    fun showTable(actionEvent: ActionEvent) {
-
-    }
+//    fun showTable(actionEvent: ActionEvent) {}
 
     fun showData(actionEvent: ActionEvent) {
         val task = createTask(::dataWork)
@@ -218,120 +209,19 @@ class TempDataWindowControl : Initializable {
         }
     }
 
-    fun fillData(data: ObservableList<Map<String, StringProperty>>) {
-        data.addAll(
-            mutableMapOf(
-                Pair("date", SimpleStringProperty("10/1/2002")),
-                Pair("time", SimpleStringProperty("11:11")),
-                Pair("temp 1", SimpleStringProperty("3,11"))
-            ),
-            mutableMapOf(
-                Pair("date", SimpleStringProperty("11/11/2021")),
-                Pair("time", SimpleStringProperty("12:10")),
-                Pair("temp 1", SimpleStringProperty("4,3"))
-            ),
-        )
-    }
-
-    fun fillData1(data: ObservableList<List<StringProperty>>) {
-        val firstRow = ArrayList<StringProperty>(3)
-        firstRow.add(0, SimpleStringProperty("31/12/2002"))
-        firstRow.add(1, SimpleStringProperty("10:12"))
-        firstRow.add(2, SimpleStringProperty("100"))
-
-        val secondRow = ArrayList<StringProperty>(3)
-        secondRow.add(0, SimpleStringProperty("30/1/2012"))
-        secondRow.add(1, SimpleStringProperty("11:12"))
-        secondRow.add(2, SimpleStringProperty("102"))
-        data.addAll(firstRow, secondRow)
-    }
-
     override fun initialize(location: URL?, resources: ResourceBundle?) {
         println("Start!!")
         db = DBwork()
         println("db size = ${db.dbSize()}")
-        serialsList2 = CheckComboBox<String>().apply { title = "Serials" }
-        serialsList2.checkModel.checkedItems.addListener(ListChangeListener<String?> { c -> clearList(c, serialsList2)})
-        serialsList2.addEventHandler(ComboBox.ON_HIDDEN) { event ->
-            println("${(event.source as CheckComboBox<String>).title} is now hidden.")
-            if (serialsList2.checkModel.checkedItems.size == 1 && oldSerialNumber != serialsList2.checkModel.checkedItems[0]) {
-                println("One item")
-                //todo разобраться с глюком бесконечного прогресс-бара, исчезающего названия комбобоксов
-                val task = createTask { (::serialNumberSelect)(ActionEvent()) }
-                Thread(task).start()
-//                serialNumberSelect(ActionEvent())
-            } //esle if ()
-
-            else if (serialsList2.checkModel.checkedItems.size > 1) println("Many items")
-        }
-        yearsList2 = CheckComboBox<String>().apply { title = "Years" }
-        yearsList2.checkModel.checkedItems.addListener(ListChangeListener<String?> { c -> clearList(c, yearsList2) })
-        yearsList2.addEventHandler(ComboBox.ON_HIDDEN) { event ->
-            println("year item[0] = ${yearsList2.checkModel.checkedItems[0]}")
-            println("${(event.source as CheckComboBox<String>).title} is now hidden.")
-            if (yearsList2.checkModel.checkedItems.size == 1 && oldYear != yearsList2.checkModel.checkedItems[0]) {
-                println("One item")
-                val task = createTask { (::yearSelect)(ActionEvent()) }
-                Thread(task).start()
-//                serialNumberSelect(ActionEvent())
-            } else if (yearsList2.checkModel.checkedItems.size > 1) println("Many items")
-            if (yearsList2.checkModel.checkedItems[0] == "0") {
-                println("Many with space")
-            }
-        }
-        yearsList2.addEventHandler(ComboBox.ON_SHOWN) { event ->
-            println("Year is shown, list size = ${yearsList2.checkModel.checkedItems.size}")
-            if (yearsList2.checkModel.checkedItems.size == 1){
-                println("years selected = 1")
-            }
-
-        }
-        monthsList2 = CheckComboBox<String>().apply { title = "Months" }
-        monthsList2.checkModel.checkedItems.addListener(ListChangeListener<String?> { c -> clearList(c, monthsList2) })
-        monthsList2.addEventHandler(ComboBox.ON_HIDDEN) { event ->
-            println("${(event.source as CheckComboBox<String>).title} is now hidden.")
-            if (monthsList2.checkModel.checkedItems.size == 1 && oldMonth != monthsList2.checkModel.checkedItems[0]) {
-                println("One item")
-                val task = createTask { (::monthSelect)(ActionEvent()) }
-                Thread(task).start()
-//                serialNumberSelect(ActionEvent())
-            } else if (monthsList2.checkModel.checkedItems.size > 1) println("Many items")
-        }
-        daysList2 = CheckComboBox<String>().apply { title = "Days" }
-        daysList2.checkModel.checkedItems.addListener(ListChangeListener<String?> { c -> clearList(c, daysList2) })
-        daysList2.addEventHandler(ComboBox.ON_HIDDEN) { event ->
-            println("${(event.source as CheckComboBox<String>).title} is now hidden.")
-        }
-        topPane.children.addAll(serialsList2, yearsList2, monthsList2, daysList2)
+        var checkComboBoxes = CheckComboBoxes(topPane, db)
+        serialsList2 =  checkComboBoxes.getSerials()
+        yearsList2 = checkComboBoxes.getYears()
+        monthsList2 = checkComboBoxes.getMonths()
+        daysList2 = checkComboBoxes.getDays()
 
         initData(db)
         initData2(db)
 
-    }
-
-    private fun clearList(c: ListChangeListener.Change<out String>?, list: CheckComboBox<String>) {
-        if (c!!.list.contains("0")) {
-                println("Clear, item[0] = ${list.checkModel.checkedItems[0]}")
-//            list.checkModel.checkedItems.clear()
-            list.checkModel.clearCheck(0)
-            list.checkModel.clearChecks()
-            if (list == serialsList2) {
-                oldSerialNumber = "0"
-                yearsList2.items.clear()
-                yearsList2.items.add("0")
-                monthsList2.items.clear()
-                monthsList2.items.add("0")
-                daysList2.items.clear()
-            }
-            if (list == yearsList2) {
-                monthsList2.items.clear()
-                monthsList2.items.add("0")
-                daysList2.items.clear()
-            }
-            if (list == monthsList2) {
-                daysList2.items.clear()
-            }
-        }
     }
 
     private fun initData2(db: DBwork) {
@@ -373,6 +263,7 @@ class TempDataWindowControl : Initializable {
         daysList.items.clear()
     }
 
+//ф-ии внизу можно будет потом уброть вместе с обычными комбобоксами
     fun yearSelect(actionEvent: ActionEvent) {
         year = yearsList2.checkModel.checkedItems[0]
         oldYear = year
@@ -456,5 +347,33 @@ class TempDataWindowControl : Initializable {
             yearsList.items.addAll(years)
         }
     }
+
+//    fun fillData(data: ObservableList<Map<String, StringProperty>>) {
+//        data.addAll(
+//            mutableMapOf(
+//                Pair("date", SimpleStringProperty("10/1/2002")),
+//                Pair("time", SimpleStringProperty("11:11")),
+//                Pair("temp 1", SimpleStringProperty("3,11"))
+//            ),
+//            mutableMapOf(
+//                Pair("date", SimpleStringProperty("11/11/2021")),
+//                Pair("time", SimpleStringProperty("12:10")),
+//                Pair("temp 1", SimpleStringProperty("4,3"))
+//            ),
+//        )
+//    }
+//
+//    fun fillData1(data: ObservableList<List<StringProperty>>) {
+//        val firstRow = ArrayList<StringProperty>(3)
+//        firstRow.add(0, SimpleStringProperty("31/12/2002"))
+//        firstRow.add(1, SimpleStringProperty("10:12"))
+//        firstRow.add(2, SimpleStringProperty("100"))
+//
+//        val secondRow = ArrayList<StringProperty>(3)
+//        secondRow.add(0, SimpleStringProperty("30/1/2012"))
+//        secondRow.add(1, SimpleStringProperty("11:12"))
+//        secondRow.add(2, SimpleStringProperty("102"))
+//        data.addAll(firstRow, secondRow)
+//    }
 
 }
