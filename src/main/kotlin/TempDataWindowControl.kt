@@ -1,6 +1,5 @@
 import javafx.application.Platform
 import javafx.beans.property.StringProperty
-import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
 import javafx.fxml.FXML
@@ -37,6 +36,7 @@ class TempDataWindowControl : Initializable {
 
     @FXML
     lateinit var table: TableView<Map<String, StringProperty>>
+
     @FXML
     lateinit var yearsList: ComboBox<Any>
     lateinit var yearsList2: CheckComboBox<String>
@@ -169,52 +169,83 @@ class TempDataWindowControl : Initializable {
             timeCol.setCellValueFactory { data -> data.value["Time"] }
             serialCol.setCellValueFactory { data -> data.value["SerialNumber"] }
 //        val data = db.getRecordsForYear(year)
-            var data: ObservableList<Map<String, StringProperty>>
-            //todo вынести работу с выпадающими списками в отдельный класс
-            if (daysList.value != null && day != "0") data =
-                db.getRecordsForMonthYearAndDay(
-                    serialNumber,
-                    year,
-                    monthsList.value.toString(),
-                    daysList.value.toString()
-                )
-            else if (monthsList.value != null && month != "0") data = db.getRecordsForMonthAndYear(
-                serialNumber,
-                year,
-                monthsList.value.toString()
-            )
-            else {
-                data =
-                    if (yearsList.value != null && year != "0") db.getRecordsForYearAndSerialNumber(year, serialNumber)
-                    else db.getRecordsForSerialNumber(serialNumber)
-            }
-//        println("keys = ${data[0].keys}")
-            println("serialNumber = $serialNumber")
-            var keys = data[0].keys.sorted()
-            keys = keys.minusElement("Date")
-            keys = keys.minusElement("Time")
-            keys = keys.filter {//для показа только данных температуры (они начинаются с 1)
-                it.startsWith('1')
-            }
-            println("keys = $keys")
-            table.columns.addAll(dateCol, timeCol, serialCol)
-            keys.forEach {
-                val col = TableColumn<Map<String, StringProperty>, String>(it)
-                col.minWidth = 80.0
-                table.columns.add(col)
-                col.setCellValueFactory { data -> data.value[it] }
-            }
-            table.items.addAll(data)
-            println("data size = ${data.size}")
+            var data: ObservableList<Map<String, StringProperty>>?
+            //todo сделать выбор из БД записей с несколькими значениями по дням, месяцам, годам и номерам датчиков
+            data = getDataFromDB()
+
+////        println("keys = ${data[0].keys}")
+//            println("serialNumber = $serialNumber")
+//            var keys = data[0].keys.sorted()
+//            keys = keys.minusElement("Date")
+//            keys = keys.minusElement("Time")
+//            keys = keys.filter {//для показа только данных температуры (они начинаются с 1)
+//                it.startsWith('1')
+//            }
+//            println("keys = $keys")
+//            table.columns.addAll(dateCol, timeCol, serialCol)
+//            keys.forEach {
+//                val col = TableColumn<Map<String, StringProperty>, String>(it)
+//                col.minWidth = 80.0
+//                table.columns.add(col)
+//                col.setCellValueFactory { data -> data.value[it] }
+//            }
+//            table.items.addAll(data)
+//            println("data size = ${data.size}")
         }
     }
 
+    private fun getDataFromDB(): ObservableList<Map<String, StringProperty>>? {
+        var data: ObservableList<Map<String, StringProperty>>? = null
+//            if (daysList2.checkModel.checkedItems.size!=0) data = db.getRecordsForMonthYearAndDay(
+//                    serialNumber,
+//                    year,
+//                    monthsList.value.toString(),
+//                    daysList.value.toString()
+//                )
+        if (serialsList2.checkModel.checkedItems.size == 0) {
+            println("Showing all data from db")
+            data = db.getRecordsForSerialNumber(serialNumber)
+        } else {
+            if (serialsList2.checkModel.checkedItems.size >1){
+                println("Showing for several serials")
+                val checkedSerials = serialsList2.checkModel.checkedItems
+                data = db.getRecordsForSerialNumbers(checkedSerials)
+            } else {
+                println("One serial")
+            }
+        }
+//            if (daysList.value != null && day != "0") data =
+//                db.getRecordsForMonthYearAndDay(
+//                    serialNumber,
+//                    year,
+//                    monthsList.value.toString(),
+//                    daysList.value.toString()
+//                )
+//            else if (monthsList.value != null && month != "0") data = db.getRecordsForMonthAndYear(
+//                serialNumber,
+//                year,
+//                monthsList.value.toString()
+//            )
+//            else {
+//                data =
+//                    if (yearsList.value != null && year != "0") db.getRecordsForYearAndSerialNumber(year, serialNumber)
+//                    else db.getRecordsForSerialNumber(serialNumber)
+//            }
+        return data
+    }
+
     override fun initialize(location: URL?, resources: ResourceBundle?) {
+        topPane.children.remove(serialsList)
+        topPane.children.remove(yearsList)
+        topPane.children.remove(monthsList)
+        topPane.children.remove(daysList)
+        topPane.children.remove(showBtn)
         println("Start!!")
         db = DBwork()
         println("db size = ${db.dbSize()}")
         var checkComboBoxes = CheckComboBoxes(topPane, db)
-        serialsList2 =  checkComboBoxes.getSerials()
+        topPane.children.add(showBtn)
+        serialsList2 = checkComboBoxes.getSerials()
         yearsList2 = checkComboBoxes.getYears()
         monthsList2 = checkComboBoxes.getMonths()
         daysList2 = checkComboBoxes.getDays()
@@ -263,7 +294,7 @@ class TempDataWindowControl : Initializable {
         daysList.items.clear()
     }
 
-//ф-ии внизу можно будет потом уброть вместе с обычными комбобоксами
+    //ф-ии внизу можно будет потом уброть вместе с обычными комбобоксами
     fun yearSelect(actionEvent: ActionEvent) {
         year = yearsList2.checkModel.checkedItems[0]
         oldYear = year
