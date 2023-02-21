@@ -22,19 +22,26 @@ class CheckComboBoxes(topPane: HBox, db: DBwork) {
 
     init {
         this.db = db
-        serialsList2 = CheckComboBox<String>().apply { title = "Serials" }
-        serialsList2.checkModel.checkedItems.addListener(ListChangeListener<String?> { c -> clearList(c, serialsList2)})
-        serialsList2.addEventHandler(ComboBox.ON_HIDDEN) { event ->
-            println("${(event.source as CheckComboBox<String>).title} is now hidden.")
-            if (serialsList2.checkModel.checkedItems.size == 1 && oldSerialNumber != serialsList2.checkModel.checkedItems[0]) {
-                println("One item")
-                //todo разобраться с глюком бесконечного прогресс-бара, исчезающего названия комбобоксов
-                val task = createTask { (::serialNumberSelect)(ActionEvent()) }
-                Thread(task).start()
-//                serialNumberSelect(ActionEvent())
-            } //esle if ()
 
-            else if (serialsList2.checkModel.checkedItems.size > 1) println("Many items")
+        daysList2 = CheckComboBox<String>().apply { title = "Days" }
+        daysList2.checkModel.checkedItems.addListener(ListChangeListener<String?> { c -> clearList(c, daysList2) })
+        daysList2.addEventHandler(ComboBox.ON_HIDDEN) { event ->
+            println("${(event.source as CheckComboBox<String>).title} is now hidden.")
+        }
+        monthsList2 = CheckComboBox<String>().apply { title = "Months" }
+        monthsList2.checkModel.checkedItems.addListener(ListChangeListener<String?> { c -> clearList(c, monthsList2) })
+        monthsList2.addEventHandler(ComboBox.ON_HIDDEN) { event ->
+            println("${(event.source as CheckComboBox<String>).title} is now hidden.")
+            if (monthsList2.checkModel.checkedItems.size == 1 && oldMonth != monthsList2.checkModel.checkedItems[0]) {
+                println("One item")
+                val task = createTask { (::monthSelect)(ActionEvent()) }
+                Thread(task).start()
+                daysList2.isDisable = false
+//                serialNumberSelect(ActionEvent())
+            } else if (monthsList2.checkModel.checkedItems.size > 1) {
+                println("Many items")
+                daysList2.isDisable = true
+            }
         }
         yearsList2 = CheckComboBox<String>().apply { title = "Years" }
         yearsList2.checkModel.checkedItems.addListener(ListChangeListener<String?> { c -> clearList(c, yearsList2) })
@@ -45,8 +52,14 @@ class CheckComboBoxes(topPane: HBox, db: DBwork) {
                 println("One item")
                 val task = createTask { (::yearSelect)(ActionEvent()) }
                 Thread(task).start()
+                monthsList2.isDisable = false
+                daysList2.isDisable = false
 //                serialNumberSelect(ActionEvent())
-            } else if (yearsList2.checkModel.checkedItems.size > 1) println("Many items")
+            } else if (yearsList2.checkModel.checkedItems.size > 1) {
+                println("Many items")
+                monthsList2.isDisable = true
+                daysList2.isDisable = true
+            }
             if (yearsList2.checkModel.checkedItems[0] == "0") {
                 println("Many with space")
             }
@@ -58,21 +71,28 @@ class CheckComboBoxes(topPane: HBox, db: DBwork) {
             }
 
         }
-        monthsList2 = CheckComboBox<String>().apply { title = "Months" }
-        monthsList2.checkModel.checkedItems.addListener(ListChangeListener<String?> { c -> clearList(c, monthsList2) })
-        monthsList2.addEventHandler(ComboBox.ON_HIDDEN) { event ->
+
+        serialsList2 = CheckComboBox<String>().apply { title = "Serials" }
+        serialsList2.checkModel.checkedItems.addListener(ListChangeListener<String?> { c -> clearList(c, serialsList2)})
+        serialsList2.addEventHandler(ComboBox.ON_HIDDEN) { event ->
             println("${(event.source as CheckComboBox<String>).title} is now hidden.")
-            if (monthsList2.checkModel.checkedItems.size == 1 && oldMonth != monthsList2.checkModel.checkedItems[0]) {
+            if (serialsList2.checkModel.checkedItems.size == 1 && oldSerialNumber != serialsList2.checkModel.checkedItems[0]) {
                 println("One item")
-                val task = createTask { (::monthSelect)(ActionEvent()) }
+                //todo разобраться с глюком бесконечного прогресс-бара, исчезающего названия комбобоксов
+                val task = createTask { (::serialNumberSelect)(ActionEvent()) }
                 Thread(task).start()
+                yearsList2.isDisable = false  //активируем другие списки
+                monthsList2.isDisable = false
+                daysList2.isDisable = false
 //                serialNumberSelect(ActionEvent())
-            } else if (monthsList2.checkModel.checkedItems.size > 1) println("Many items")
-        }
-        daysList2 = CheckComboBox<String>().apply { title = "Days" }
-        daysList2.checkModel.checkedItems.addListener(ListChangeListener<String?> { c -> clearList(c, daysList2) })
-        daysList2.addEventHandler(ComboBox.ON_HIDDEN) { event ->
-            println("${(event.source as CheckComboBox<String>).title} is now hidden.")
+            } //esle if ()
+
+            else if (serialsList2.checkModel.checkedItems.size > 1) {
+                println("Many items")
+                yearsList2.isDisable = true  //деактивируем другие списки, чтобы в них ничего нельзя было выбрать
+                monthsList2.isDisable = true
+                daysList2.isDisable = true
+            }
         }
         topPane.children.addAll(serialsList2, yearsList2, monthsList2, daysList2)
     }

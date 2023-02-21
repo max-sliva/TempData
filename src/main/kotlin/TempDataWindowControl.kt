@@ -82,34 +82,6 @@ class TempDataWindowControl : Initializable {
         println("FileWork finished")
     }
 
-//    fun createTask(function: () -> (Unit)): Task<Void> { //для запуска потока с функцией
-//        val dialog = Stage(StageStyle.UNDECORATED)
-//        dialog.title = "Work in progress"
-//        dialog.initModality(Modality.APPLICATION_MODAL)
-//        val bar = ProgressIndicator()
-//        val pane = BorderPane()
-//        pane.center = bar
-//        dialog.scene = Scene(pane, 350.0, 150.0)
-//        val task: Task<Void> = object : Task<Void>() {
-//            @Throws(Exception::class)
-//            override fun call(): Void? {
-////                val file = fileChooser.showOpenDialog(mainPane.scene.window)
-//                println("progress = ${bar.progress}")
-//                function()
-//                println("progress = All")
-//                return null
-//            }
-//        }
-//        // bar.progressProperty().bind(task.progressProperty())
-//        task.onSucceeded = EventHandler {
-//            println("Done!")
-//            pane.bottom = Label("Done opening file an preparing data. Please, close the window")
-//            dialog.close()
-//        }
-//        dialog.show().apply { }
-//        return task
-//    }
-
     fun openCSVfile(actionEvent: ActionEvent) {
         dataIsReady = false
         println("open file")
@@ -169,51 +141,72 @@ class TempDataWindowControl : Initializable {
             timeCol.setCellValueFactory { data -> data.value["Time"] }
             serialCol.setCellValueFactory { data -> data.value["SerialNumber"] }
 //        val data = db.getRecordsForYear(year)
-            var data: ObservableList<Map<String, StringProperty>>?
+            var data = getDataFromDB()
             //todo сделать выбор из БД записей с несколькими значениями по дням, месяцам, годам и номерам датчиков
-            data = getDataFromDB()
+//            data = getDataFromDB()
 
-////        println("keys = ${data[0].keys}")
-//            println("serialNumber = $serialNumber")
-//            var keys = data[0].keys.sorted()
-//            keys = keys.minusElement("Date")
-//            keys = keys.minusElement("Time")
-//            keys = keys.filter {//для показа только данных температуры (они начинаются с 1)
-//                it.startsWith('1')
-//            }
-//            println("keys = $keys")
-//            table.columns.addAll(dateCol, timeCol, serialCol)
-//            keys.forEach {
-//                val col = TableColumn<Map<String, StringProperty>, String>(it)
-//                col.minWidth = 80.0
-//                table.columns.add(col)
-//                col.setCellValueFactory { data -> data.value[it] }
-//            }
-//            table.items.addAll(data)
-//            println("data size = ${data.size}")
+//        println("keys = ${data[0].keys}")
+            println("serialNumber = $serialNumber")
+            var keys = data?.get(0)!!.keys.sorted()
+            keys = keys.minusElement("Date")
+            keys = keys.minusElement("Time")
+            keys = keys.filter {//для показа только данных температуры (они начинаются с 1)
+                it.startsWith('1')
+            }
+            println("keys = $keys")
+            table.columns.addAll(dateCol, timeCol, serialCol)
+            keys.forEach {
+                val col = TableColumn<Map<String, StringProperty>, String>(it)
+                col.minWidth = 80.0
+                table.columns.add(col)
+                col.setCellValueFactory { data -> data.value[it] }
+            }
+            table.items.addAll(data)
+            println("data size = ${data.size}")
         }
     }
 
     private fun getDataFromDB(): ObservableList<Map<String, StringProperty>>? {
         var data: ObservableList<Map<String, StringProperty>>? = null
-//            if (daysList2.checkModel.checkedItems.size!=0) data = db.getRecordsForMonthYearAndDay(
-//                    serialNumber,
-//                    year,
-//                    monthsList.value.toString(),
-//                    daysList.value.toString()
-//                )
-        if (serialsList2.checkModel.checkedItems.size == 0) {
-            println("Showing all data from db")
-            data = db.getRecordsForSerialNumber(serialNumber)
+            serialNumber = serialsList2.checkModel.checkedItems[0]
+            year = yearsList2.checkModel.checkedItems[0]
+            month = monthsList2.checkModel.checkedItems[0]
+        if (!daysList2.isDisable && daysList2.checkModel.checkedItems.size != 0) {
+            println("getData for days, serialNumber = ${serialNumber}, year = ${year}, month = $month")
+            val checkedDays = daysList2.checkModel.checkedItems
+            checkedDays.forEach {
+                if (data == null) data = db.getRecordsForMonthYearAndDay(serialNumber, year, month, it)
+                else data?.addAll(db.getRecordsForMonthYearAndDay(serialNumber, year, month, it))
+            }
         } else {
-            if (serialsList2.checkModel.checkedItems.size >1){
-                println("Showing for several serials")
-                val checkedSerials = serialsList2.checkModel.checkedItems
-                data = db.getRecordsForSerialNumbers(checkedSerials)
+            if (!monthsList2.isDisable && monthsList2.checkModel.checkedItems.size != 0) {
+                println("getData for months, serialNumber = ${serialNumber}, year = $year")
+                val checkedMonths = monthsList2.checkModel.checkedItems
+                checkedMonths.forEach {
+                    if (data == null) data = db.getRecordsForMonthAndYear(serialNumber, year, it)
+                    else data?.addAll(db.getRecordsForMonthAndYear(serialNumber, year, it))
+                }
             } else {
-                println("One serial")
+
             }
         }
+//        val checkedSerials = serialsList2.checkModel.checkedItems
+//        checkedSerials.forEach {
+//            if (data==null)  data = db.getRecordsForSerialNumber(it)
+//            else data?.addAll(db.getRecordsForSerialNumber(it))
+//        }
+//        if (serialsList2.checkModel.checkedItems.size == 0) {
+//            println("Showing all data from db")
+//            data = db.getRecordsForSerialNumber(serialNumber)
+//        } else {
+//            if (serialsList2.checkModel.checkedItems.size >1){
+//                println("Showing for several serials")
+//                val checkedSerials = serialsList2.checkModel.checkedItems
+//                data = db.getRecordsForSerialNumbers(checkedSerials)
+//            } else {
+//                println("One serial")
+//            }
+//        }
 //            if (daysList.value != null && day != "0") data =
 //                db.getRecordsForMonthYearAndDay(
 //                    serialNumber,

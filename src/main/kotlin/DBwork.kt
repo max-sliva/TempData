@@ -220,15 +220,15 @@ class DBwork {
         return data
     }
 
-    fun getRecordsForSerialNumbers(checkedSerials: ObservableList<String>?): ObservableList<Map<String, StringProperty>>? {
-        var data : ObservableList<Map<String, StringProperty>> = FXCollections.observableArrayList()
-        if (checkedSerials!!.size == 1)
-             data = getRecordsForSerialNumber(checkedSerials!![0])
-        else {
-            //todo сделать выборку по нескольким номерам датчиков
-        }
-        return data
-    }
+//    fun getRecordsForSerialNumbers(checkedSerials: ObservableList<String>?): ObservableList<Map<String, StringProperty>>? {
+//        var data : ObservableList<Map<String, StringProperty>> = FXCollections.observableArrayList()
+//        if (checkedSerials!!.size == 1)
+//             data = getRecordsForSerialNumber(checkedSerials!![0])
+//        else {
+//            //todo сделать выборку по нескольким номерам датчиков
+//        }
+//        return data
+//    }
 }
 
 fun main() {
