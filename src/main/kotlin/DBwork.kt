@@ -225,7 +225,6 @@ class DBwork {
 //        if (checkedSerials!!.size == 1)
 //             data = getRecordsForSerialNumber(checkedSerials!![0])
 //        else {
-//            //todo сделать выборку по нескольким номерам датчиков
 //        }
 //        return data
 //    }

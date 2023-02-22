@@ -142,8 +142,7 @@ class TempDataWindowControl : Initializable {
             serialCol.setCellValueFactory { data -> data.value["SerialNumber"] }
 //        val data = db.getRecordsForYear(year)
             var data = getDataFromDB()
-            //todo сделать выбор из БД записей с несколькими значениями по дням, месяцам, годам и номерам датчиков
-//            data = getDataFromDB()
+    //            data = getDataFromDB()
 
 //        println("keys = ${data[0].keys}")
             println("serialNumber = $serialNumber")
@@ -187,7 +186,17 @@ class TempDataWindowControl : Initializable {
                     else data?.addAll(db.getRecordsForMonthAndYear(serialNumber, year, it))
                 }
             } else {
-
+                if (!yearsList2.isDisable && yearsList2.checkModel.checkedItems.size != 0) {
+                    println("getData for years, serialNumber = ${serialNumber}")
+                    val checkedYears = yearsList2.checkModel.checkedItems
+                    checkedYears.forEach {
+                        if (data == null) data = db.getRecordsForYearAndSerialNumber(it, serialNumber)
+                        else data?.addAll(db.getRecordsForYearAndSerialNumber(it, serialNumber))
+                    }
+                } else {
+                    //todo сделать выбор для нескольких датчиков
+                    data = db.getRecordsForSerialNumber(serialNumber)
+                }
             }
         }
 //        val checkedSerials = serialsList2.checkModel.checkedItems
