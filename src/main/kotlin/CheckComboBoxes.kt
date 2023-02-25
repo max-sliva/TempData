@@ -53,7 +53,7 @@ class CheckComboBoxes(topPane: HBox, db: DBwork) {
                 val task = createTask { (::yearSelect)(ActionEvent()) }
                 Thread(task).start()
                 monthsList2.isDisable = false
-                daysList2.isDisable = false
+//                daysList2.isDisable = false
 //                serialNumberSelect(ActionEvent())
             } else if (yearsList2.checkModel.checkedItems.size > 1) {
                 println("Many items")
@@ -78,12 +78,12 @@ class CheckComboBoxes(topPane: HBox, db: DBwork) {
             println("${(event.source as CheckComboBox<String>).title} is now hidden.")
             if (serialsList2.checkModel.checkedItems.size == 1 && oldSerialNumber != serialsList2.checkModel.checkedItems[0]) {
                 println("One item")
-                //todo разобраться с глюком бесконечного прогресс-бара, исчезающего названия комбобоксов
+                //todo разобраться с глюком бесконечного прогресс-бара, исчезающего названия комбобоксов, если такой глюк еще будет
                 val task = createTask { (::serialNumberSelect)(ActionEvent()) }
                 Thread(task).start()
                 yearsList2.isDisable = false  //активируем другие списки
-                monthsList2.isDisable = false
-                daysList2.isDisable = false
+//                monthsList2.isDisable = false
+//                daysList2.isDisable = false
 //                serialNumberSelect(ActionEvent())
             } //esle if ()
 
@@ -110,14 +110,17 @@ class CheckComboBoxes(topPane: HBox, db: DBwork) {
                 monthsList2.items.clear()
                 monthsList2.items.add("0")
                 daysList2.items.clear()
+                daysList2.items.add("0")
             }
             if (list == yearsList2) {
                 monthsList2.items.clear()
                 monthsList2.items.add("0")
                 daysList2.items.clear()
+                daysList2.items.add("0")
             }
             if (list == monthsList2) {
                 daysList2.items.clear()
+                daysList2.items.add("0")
             }
         }
     }
@@ -181,7 +184,7 @@ class CheckComboBoxes(topPane: HBox, db: DBwork) {
         val days = db.getDaysForMonth(month, year, serialNumber).sorted()
         println("days for month = $days")
         daysList2.items.clear()
-        daysList2.items.add(" ")
+        daysList2.items.add("0")
         daysList2.items.addAll(days)
 
 //        println("month = $month")

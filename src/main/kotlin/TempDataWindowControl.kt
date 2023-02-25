@@ -17,6 +17,8 @@ import java.util.*
 
 class TempDataWindowControl : Initializable {
 
+    lateinit var textLabel: Label
+
     @FXML
     lateinit var topPane: HBox
     lateinit var serialCol: TableColumn<Map<String, StringProperty>, String>
@@ -142,7 +144,7 @@ class TempDataWindowControl : Initializable {
             serialCol.setCellValueFactory { data -> data.value["SerialNumber"] }
 //        val data = db.getRecordsForYear(year)
             var data = getDataFromDB()
-    //            data = getDataFromDB()
+            //            data = getDataFromDB()
 
 //        println("keys = ${data[0].keys}")
             println("serialNumber = $serialNumber")
@@ -164,12 +166,13 @@ class TempDataWindowControl : Initializable {
             println("data size = ${data.size}")
         }
     }
-
+//todo добавить различные фильтры по данным таблицы - по времени, темппературе и т.д.
     private fun getDataFromDB(): ObservableList<Map<String, StringProperty>>? {
         var data: ObservableList<Map<String, StringProperty>>? = null
-            serialNumber = serialsList2.checkModel.checkedItems[0]
-            year = yearsList2.checkModel.checkedItems[0]
-            month = monthsList2.checkModel.checkedItems[0]
+        if (serialsList2.checkModel.checkedItems.size != 0) serialNumber = serialsList2.checkModel.checkedItems[0]
+        else serialNumber = serialsList2.checkModel.getItem(1)
+        if (yearsList2.checkModel.checkedItems.size != 0) year = yearsList2.checkModel.checkedItems[0]
+        if (monthsList2.checkModel.checkedItems.size != 0) month = monthsList2.checkModel.checkedItems[0]
         if (!daysList2.isDisable && daysList2.checkModel.checkedItems.size != 0) {
             println("getData for days, serialNumber = ${serialNumber}, year = ${year}, month = $month")
             val checkedDays = daysList2.checkModel.checkedItems
@@ -177,6 +180,8 @@ class TempDataWindowControl : Initializable {
                 if (data == null) data = db.getRecordsForMonthYearAndDay(serialNumber, year, month, it)
                 else data?.addAll(db.getRecordsForMonthYearAndDay(serialNumber, year, month, it))
             }
+            val days = getStringFromArray(checkedDays)
+            textLabel.text = "Serial = $serialNumber, year = ${year}, month = $month, day = $checkedDays "
         } else {
             if (!monthsList2.isDisable && monthsList2.checkModel.checkedItems.size != 0) {
                 println("getData for months, serialNumber = ${serialNumber}, year = $year")
@@ -185,6 +190,9 @@ class TempDataWindowControl : Initializable {
                     if (data == null) data = db.getRecordsForMonthAndYear(serialNumber, year, it)
                     else data?.addAll(db.getRecordsForMonthAndYear(serialNumber, year, it))
                 }
+                val months = getStringFromArray(checkedMonths)
+                textLabel.text = "Serial = $serialNumber, year = ${year}, month = $checkedMonths all days"
+
             } else {
                 if (!yearsList2.isDisable && yearsList2.checkModel.checkedItems.size != 0) {
                     println("getData for years, serialNumber = ${serialNumber}")
@@ -193,9 +201,22 @@ class TempDataWindowControl : Initializable {
                         if (data == null) data = db.getRecordsForYearAndSerialNumber(it, serialNumber)
                         else data?.addAll(db.getRecordsForYearAndSerialNumber(it, serialNumber))
                     }
+                    val years = getStringFromArray(checkedYears)
+                    textLabel.text = "Serial = $serialNumber, year = $checkedYears all months all days"
                 } else {
-                    //todo сделать выбор для нескольких датчиков
-                    data = db.getRecordsForSerialNumber(serialNumber)
+                    if (!serialsList2.isDisable && serialsList2.checkModel.checkedItems.size != 0) {
+                        println("getData for serialNumber")
+                        val checkedSerials = serialsList2.checkModel.checkedItems
+                        checkedSerials.forEach {
+                            if (data == null) data = db.getRecordsForSerialNumber(it)
+                            else data?.addAll(db.getRecordsForSerialNumber(it))
+                        }
+//                        val serials = getStringFromArray(checkedSerials)
+                        textLabel.text = "Serial = $$checkedSerials all years all months all days"
+                    }
+                    else {
+                        data = db.getRecordsForSerialNumber(serialNumber)
+                    }
                 }
             }
         }
@@ -236,6 +257,13 @@ class TempDataWindowControl : Initializable {
         return data
     }
 
+    private fun getStringFromArray(checkedItems: ObservableList<String>?): Any {
+        var str: String
+        if (checkedItems?.size == 1) str = checkedItems[0]
+        else str = "${checkedItems?.first()}-${checkedItems?.last()}"
+        return str
+    }
+
     override fun initialize(location: URL?, resources: ResourceBundle?) {
         topPane.children.remove(serialsList)
         topPane.children.remove(yearsList)
@@ -248,9 +276,9 @@ class TempDataWindowControl : Initializable {
         var checkComboBoxes = CheckComboBoxes(topPane, db)
         topPane.children.add(showBtn)
         serialsList2 = checkComboBoxes.getSerials()
-        yearsList2 = checkComboBoxes.getYears()
-        monthsList2 = checkComboBoxes.getMonths()
-        daysList2 = checkComboBoxes.getDays()
+        yearsList2 = checkComboBoxes.getYears().apply { isDisable = true }
+        monthsList2 = checkComboBoxes.getMonths().apply { isDisable = true }
+        daysList2 = checkComboBoxes.getDays().apply { isDisable = true }
 
         initData(db)
         initData2(db)
@@ -379,6 +407,10 @@ class TempDataWindowControl : Initializable {
             yearsList.items.add("0")
             yearsList.items.addAll(years)
         }
+    }
+
+    fun openDiagramWindow(actionEvent: ActionEvent) {
+
     }
 
 //    fun fillData(data: ObservableList<Map<String, StringProperty>>) {
