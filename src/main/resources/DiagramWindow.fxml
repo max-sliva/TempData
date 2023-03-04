@@ -1,12 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-
-<BorderPane xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="DiagramWindow">
+<BorderPane stylesheets="@styles.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="DiagramWindow">
+<!--<BorderPane xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="DiagramWindow">-->
+   <left>
+      <VBox fx:id="boxForCheckCombos" prefHeight="400.0" prefWidth="279.0" styleClass="custom-dashed-border-green" BorderPane.alignment="CENTER" />
+   </left>
    <center>
-      <AnchorPane prefHeight="400.0" prefWidth="600.0">
-
-</AnchorPane>
+      <StackPane prefHeight="400.0" prefWidth="505.0" BorderPane.alignment="CENTER">
+         <children>
+            <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE">
+              <tabs>
+                <Tab text="0m">
+                  <content>
+                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" styleClass="custom-dashed-border-blue" />
+                  </content>
+                </Tab>
+              </tabs>
+            </TabPane>
+         </children></StackPane>
    </center>
+   <top>
+      <HBox alignment="CENTER" prefHeight="38.0" prefWidth="784.0" spacing="20.0" BorderPane.alignment="CENTER">
+         <children>
+            <RadioButton mnemonicParsing="false" selected="true" text="in tabs">
+               <toggleGroup>
+                  <ToggleGroup fx:id="tabs" />
+               </toggleGroup></RadioButton>
+            <RadioButton mnemonicParsing="false" text="all in one" toggleGroup="$tabs" />
+         </children>
+      </HBox>
+   </top>
 </BorderPane>

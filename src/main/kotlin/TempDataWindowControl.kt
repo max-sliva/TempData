@@ -4,10 +4,14 @@ import javafx.collections.ObservableList
 import javafx.event.ActionEvent
 import javafx.fxml.FXML
 import javafx.fxml.Initializable
+import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
 import javafx.stage.FileChooser
+import javafx.stage.Modality
+import javafx.stage.Stage
+import org.apache.commons.beanutils.BeanUtils
 import org.controlsfx.control.CheckComboBox
 import java.io.*
 import java.net.URL
@@ -17,19 +21,21 @@ import java.util.*
 
 class TempDataWindowControl : Initializable {
 
+    lateinit var diagramWindowShow: MenuItem
     lateinit var textLabel: Label
 
     @FXML
     lateinit var topPane: HBox
     lateinit var serialCol: TableColumn<Map<String, StringProperty>, String>
     lateinit var serialsList: ComboBox<Any>
-    lateinit var serialsList2: CheckComboBox<String>
     private var dataIsReady: Boolean = false
     lateinit var showBtn: Button
     lateinit var daysList: ComboBox<Any>
+    lateinit var serialsList2: CheckComboBox<String>
+    lateinit var yearsList2: CheckComboBox<String>
     lateinit var daysList2: CheckComboBox<String>
-    lateinit var monthsList: ComboBox<Any>
     lateinit var monthsList2: CheckComboBox<String>
+    lateinit var monthsList: ComboBox<Any>
     lateinit var timeCol: TableColumn<Map<String, StringProperty>, String>
 //    lateinit var timeCol: TableColumn<List<StringProperty>, String>
 
@@ -41,7 +47,6 @@ class TempDataWindowControl : Initializable {
 
     @FXML
     lateinit var yearsList: ComboBox<Any>
-    lateinit var yearsList2: CheckComboBox<String>
 
     //    lateinit var table: TableView<List<StringProperty>>
     lateinit var mainPane: BorderPane
@@ -132,6 +137,7 @@ class TempDataWindowControl : Initializable {
     fun showData(actionEvent: ActionEvent) {
         val task = createTask(::dataWork)
         Thread(task).start()
+        diagramWindowShow.isDisable = false
     }
 
     fun dataWork() { //для показа данных из БД
@@ -410,7 +416,16 @@ class TempDataWindowControl : Initializable {
     }
 
     fun openDiagramWindow(actionEvent: ActionEvent) {
-
+//        val fxmlPath = "${getCurrentPath()}/DiagramWindow.fxml"
+//        val fxmlLoader = FXMLLoader(URL("file:$fxmlPath")) //для jar-файла
+//        val fxmlLoader = FXMLLoader(this.javaClass.getResource("ferreFrame.fxml")) //для запуска из IDE
+        val fxmlLoader = getLoader("DiagramWindow.fxml")
+        val stage = Stage() //создаем новое окно
+        stage.scene = Scene(fxmlLoader.load()) //загружаем в него данные
+        val diagramWindowClass = fxmlLoader.getController<DiagramWindow>()
+        stage.initModality(Modality.WINDOW_MODAL) //делаем окно модальным
+        stage.initOwner(mainPane.scene.window) //и его владельцем делаем главное окно
+        stage.show()
     }
 
 //    fun fillData(data: ObservableList<Map<String, StringProperty>>) {

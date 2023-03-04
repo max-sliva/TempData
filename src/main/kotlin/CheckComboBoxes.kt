@@ -2,9 +2,10 @@ import javafx.collections.ListChangeListener
 import javafx.event.ActionEvent
 import javafx.scene.control.ComboBox
 import javafx.scene.layout.HBox
+import javafx.scene.layout.Pane
 import org.controlsfx.control.CheckComboBox
 
-class CheckComboBoxes(topPane: HBox, db: DBwork) {
+class CheckComboBoxes(topPane: Pane, db: DBwork) {
     var serialsList2: CheckComboBox<String>
     var yearsList2: CheckComboBox<String>
     var monthsList2: CheckComboBox<String>

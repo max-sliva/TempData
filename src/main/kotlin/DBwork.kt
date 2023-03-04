@@ -11,7 +11,7 @@ class DBwork {
     var dataHashMap = HashMap<String, ObservableList<Map<String, StringProperty>>>()
     var mutableDoc = MutableDocument()
     lateinit var dbRecords: List<Result>
-
+//todo попробовать сделать синглетон
     init {
         CouchbaseLite.init()
         println("Starting DB")
