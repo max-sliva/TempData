@@ -11,11 +11,13 @@ import javafx.scene.chart.BarChart
 import javafx.scene.chart.CategoryAxis
 import javafx.scene.chart.NumberAxis
 import javafx.scene.chart.XYChart
+import javafx.scene.control.TabPane
 import javafx.scene.layout.AnchorPane
 import javafx.scene.layout.Pane
 
 class DiagramWindow: Initializable {
     @FXML
+    lateinit var tabPane: TabPane
     lateinit var tabForDiagram: AnchorPane
     lateinit var paneForDiagram: Pane
     lateinit var showDiagramBtn: Button
@@ -63,6 +65,7 @@ class DiagramWindow: Initializable {
     }
 
     fun showDiagram(actionEvent: ActionEvent) {
+        createBarChart("Year",arrayOf("2007", "2008", "2009"),"Price")
         println("Show diagram")
         var bc : BarChart<String, Number>? = null //объект-диаграмма
         var series1 : XYChart.Series<String, Number>? = null //серия данных
@@ -74,13 +77,13 @@ class DiagramWindow: Initializable {
 //задаем формат подписей делений оси OY – со знаком $
         yAxis.tickLabelFormatter = NumberAxis.DefaultFormatter(yAxis, "$", null)
         bc = BarChart(xAxis, yAxis) //создаем столбчатую диаграмму с осями xAxis и yAxis
-        bc!!.title = "Advanced Bar Chart" // задаем название диаграммы
+        bc.title = "Advanced Bar Chart" // задаем название диаграммы
         xAxis.label = "Year" //задаем общую подпись оси ОХ
 //задаем подписи категорий оси ОХ
         xAxis.categories = FXCollections.observableArrayList(listOf(*years))
         yAxis.label = "Price" //задаем общую подпись оси OY
         series1 = XYChart.Series() //создаем набор однотипных данных
-        series1!!.name = "Data Series 1" //даем ему название и так еще 2 раза
+        series1.name = "Data Series 1" //даем ему название и так еще 2 раза
         val series2 = XYChart.Series<String, Number>()
         series2.name = "Data Series 2"
         val series3 = XYChart.Series<String, Number>()
@@ -99,7 +102,22 @@ class DiagramWindow: Initializable {
         bc!!.data.add(series1) //добавляем созданные наборы в диаграмму
         bc!!.data.add(series2)
         bc!!.data.add(series3)
-        paneForDiagram.children.add(bc)
-        //todo add data from checkcombos
+        if (paneForDiagram.isVisible) paneForDiagram.children.add(bc)
+
+    }
+
+    private fun createBarChart(xLabel: String, times: Array<String>, yLabel: String) {
+        var bc : BarChart<String, Number>? = null //объект-диаграмма
+//todo дописать метод для создания диаграммы по параметрам
+    }
+
+    fun allInOneClick(actionEvent: ActionEvent) {
+        paneForDiagram.isVisible = true
+        tabPane.isVisible = false
+    }
+
+    fun inTabsClick(actionEvent: ActionEvent) {
+        paneForDiagram.isVisible = false
+        tabPane.isVisible = true
     }
 }
