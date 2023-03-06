@@ -29,10 +29,10 @@
                       </Menu>
                     </menus>
                   </MenuBar>
-                  <ComboBox fx:id="serialsList" onAction="#serialNumberSelect" prefHeight="25.0" prefWidth="85.0" promptText="Place" />
-                  <ComboBox fx:id="yearsList" onAction="#yearSelect" prefHeight="26.0" prefWidth="94.0" promptText="Year" />
-                  <ComboBox fx:id="monthsList" onAction="#monthSelect" prefHeight="26.0" prefWidth="101.0" promptText="Month" />
-                  <ComboBox fx:id="daysList" onAction="#daySelect" prefHeight="26.0" prefWidth="83.0" promptText="Day" />
+<!--                  <ComboBox fx:id="serialsList" onAction="#serialNumberSelect" prefHeight="25.0" prefWidth="85.0" promptText="Place" />-->
+<!--                  <ComboBox fx:id="yearsList" onAction="#yearSelect" prefHeight="26.0" prefWidth="94.0" promptText="Year" />-->
+<!--                  <ComboBox fx:id="monthsList" onAction="#monthSelect" prefHeight="26.0" prefWidth="101.0" promptText="Month" />-->
+<!--                  <ComboBox fx:id="daysList" onAction="#daySelect" prefHeight="26.0" prefWidth="83.0" promptText="Day" />-->
                   <Button fx:id="showBtn" mnemonicParsing="false" onAction="#showData" text="Show" />
                </children>
             </HBox>

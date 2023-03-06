@@ -159,7 +159,7 @@ class DBwork {
 //            .from(DataSource.database(database))
 //        for (result in listQuery.execute().allResults()) {
             try {
-                dbRecords.size
+                println("dbRecords.size = ${dbRecords.size}")
             } catch (e: UninitializedPropertyAccessException) {
                 println("Loading from DB to dbRecords")
                 val listQuery = QueryBuilder.select(SelectResult.all())
@@ -219,6 +219,10 @@ class DBwork {
             }
         }
         return data
+    }
+
+    fun clearHashMap() {
+        dataHashMap.clear()
     }
 }
 

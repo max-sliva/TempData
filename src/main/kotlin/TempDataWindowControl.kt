@@ -27,15 +27,16 @@ class TempDataWindowControl : Initializable {
     @FXML
     lateinit var topPane: HBox
     lateinit var serialCol: TableColumn<Map<String, StringProperty>, String>
-    lateinit var serialsList: ComboBox<Any>
+//    lateinit var serialsList: ComboBox<Any>
+//    lateinit var yearsList: ComboBox<Any>
+//    lateinit var monthsList: ComboBox<Any>
     private var dataIsReady: Boolean = false
     lateinit var showBtn: Button
     lateinit var daysList: ComboBox<Any>
-    lateinit var serialsList2: CheckComboBox<String>
-    lateinit var yearsList2: CheckComboBox<String>
-    lateinit var daysList2: CheckComboBox<String>
-    lateinit var monthsList2: CheckComboBox<String>
-    lateinit var monthsList: ComboBox<Any>
+    var serialsList2 = CheckComboBox<String>()
+    var yearsList2 = CheckComboBox<String>()
+    var daysList2 = CheckComboBox<String>()
+    var monthsList2 = CheckComboBox<String>()
     lateinit var timeCol: TableColumn<Map<String, StringProperty>, String>
 //    lateinit var timeCol: TableColumn<List<StringProperty>, String>
 
@@ -46,7 +47,6 @@ class TempDataWindowControl : Initializable {
     lateinit var table: TableView<Map<String, StringProperty>>
 
     @FXML
-    lateinit var yearsList: ComboBox<Any>
 
     //    lateinit var table: TableView<List<StringProperty>>
     lateinit var mainPane: BorderPane
@@ -83,7 +83,9 @@ class TempDataWindowControl : Initializable {
         println("size = ${records.size}")
         if (records.size > 0) {
             showBtn.isDisable = false
-            initData(dbObject)
+//            initData(dbObject)
+//            initData2(dbObject)
+            dbObject.clearHashMap()
             initData2(dbObject)
         }
         println("FileWork finished")
@@ -132,8 +134,6 @@ class TempDataWindowControl : Initializable {
         return records
     }
 
-//    fun showTable(actionEvent: ActionEvent) {}
-
     fun showData(actionEvent: ActionEvent) {
         val task = createTask(::dataWork)
         Thread(task).start()
@@ -150,7 +150,6 @@ class TempDataWindowControl : Initializable {
             serialCol.setCellValueFactory { data -> data.value["SerialNumber"] }
 //        val data = db.getRecordsForYear(year)
             var data = getDataFromDB()
-            //            data = getDataFromDB()
 
 //        println("keys = ${data[0].keys}")
             println("serialNumber = $serialNumber")
@@ -226,40 +225,6 @@ class TempDataWindowControl : Initializable {
                 }
             }
         }
-//        val checkedSerials = serialsList2.checkModel.checkedItems
-//        checkedSerials.forEach {
-//            if (data==null)  data = db.getRecordsForSerialNumber(it)
-//            else data?.addAll(db.getRecordsForSerialNumber(it))
-//        }
-//        if (serialsList2.checkModel.checkedItems.size == 0) {
-//            println("Showing all data from db")
-//            data = db.getRecordsForSerialNumber(serialNumber)
-//        } else {
-//            if (serialsList2.checkModel.checkedItems.size >1){
-//                println("Showing for several serials")
-//                val checkedSerials = serialsList2.checkModel.checkedItems
-//                data = db.getRecordsForSerialNumbers(checkedSerials)
-//            } else {
-//                println("One serial")
-//            }
-//        }
-//            if (daysList.value != null && day != "0") data =
-//                db.getRecordsForMonthYearAndDay(
-//                    serialNumber,
-//                    year,
-//                    monthsList.value.toString(),
-//                    daysList.value.toString()
-//                )
-//            else if (monthsList.value != null && month != "0") data = db.getRecordsForMonthAndYear(
-//                serialNumber,
-//                year,
-//                monthsList.value.toString()
-//            )
-//            else {
-//                data =
-//                    if (yearsList.value != null && year != "0") db.getRecordsForYearAndSerialNumber(year, serialNumber)
-//                    else db.getRecordsForSerialNumber(serialNumber)
-//            }
         return data
     }
 
@@ -271,149 +236,50 @@ class TempDataWindowControl : Initializable {
     }
 
     override fun initialize(location: URL?, resources: ResourceBundle?) {
-        topPane.children.remove(serialsList)
-        topPane.children.remove(yearsList)
-        topPane.children.remove(monthsList)
-        topPane.children.remove(daysList)
         topPane.children.remove(showBtn)
         println("Start!!")
         db = DBwork()
-        println("db size = ${db.dbSize()}")
-        var checkComboBoxes = CheckComboBoxes(topPane, db)
-        topPane.children.add(showBtn)
-        serialsList2 = checkComboBoxes.getSerials()
-        yearsList2 = checkComboBoxes.getYears().apply { isDisable = true }
-        monthsList2 = checkComboBoxes.getMonths().apply { isDisable = true }
-        daysList2 = checkComboBoxes.getDays().apply { isDisable = true }
 
-        initData(db)
-        initData2(db)
-
+        if (db.dbSize() != 0L)
+            initData2(db)
     }
 
     private fun initData2(db: DBwork) {
+//    private fun initData2() {
 //        val years = db.getYearsForSerialNumber(serialNumber)
-        if (db.dbSize() == 0L) showBtn.isDisable = true
-        val serialNumbers = db.getSerialNumbers()
-        serialsList2.items.clear()
-        serialsList2.items.add("0")
-        serialsList2.items.addAll(serialNumbers)
+//    db = DBwork()
+//    if (db.dbSize() != 0L) {
+//        showBtn.isDisable = true
+        println("started initData2")
+        Platform.runLater {
+            serialsList2.isDisable = true
+            topPane.children.remove(serialsList2)
+            topPane.children.remove(yearsList2)
+            topPane.children.remove(monthsList2)
+            topPane.children.remove(daysList2)
+            topPane.children.remove(showBtn)
+            println("db size in initialize = ${db.dbSize()}")
+            var checkComboBoxes = CheckComboBoxes(topPane, db)
+            topPane.children.add(showBtn)
+            serialsList2 = checkComboBoxes.getSerials()
+            yearsList2 = checkComboBoxes.getYears().apply { isDisable = true }
+            monthsList2 = checkComboBoxes.getMonths().apply { isDisable = true }
+            daysList2 = checkComboBoxes.getDays().apply { isDisable = true }
+            val serialNumbers = db.getSerialNumbers()
+            serialsList2.items.clear()
+            serialsList2.items.add("0")
+            serialsList2.items.addAll(serialNumbers)
 
-        yearsList2.items.clear()
-        yearsList2.items.add("0")
+            yearsList2.items.clear()
+            yearsList2.items.add("0")
 //        yearsList2.items.addAll(years)
-        monthsList2.items.clear()
-        monthsList2.items.add("0")
-        daysList2.items.clear()
-
-//        val strings = FXCollections.observableArrayList<String>()
-//        for (i in 0..100) {
-//            strings.add("Item $i")
-//        }
-//        val checkComboBox = CheckComboBox(strings)
-//        topPane.children.addAll(serialsList2, yearsList2, monthsList2, daysList2)
-    }
-
-    private fun initData(db: DBwork) {
-        val years = db.getYearsForSerialNumber(serialNumber)
-        if (db.dbSize() == 0L) showBtn.isDisable = true
-        val serialNumbers = db.getSerialNumbers()
-        serialsList.items.clear()
-        serialsList.items.add("0")
-        serialsList.items.addAll(serialNumbers)
-
-        yearsList.items.clear()
-        yearsList.items.add("0")
-        yearsList.items.addAll(years)
-        monthsList.items.clear()
-        monthsList.items.add("0")
-        daysList.items.clear()
-    }
-
-    //ф-ии внизу можно будет потом уброть вместе с обычными комбобоксами
-    fun yearSelect(actionEvent: ActionEvent) {
-        year = yearsList2.checkModel.checkedItems[0]
-        oldYear = year
-//        year = yearsList?.selectionModel?.selectedItem.toString()
-        println("year = $year")
-        val months = db.getMonthsForYear(year, serialNumber).sorted()
-        println("months = $months")
-        monthsList2.items.clear()
-        monthsList2.items.add("0")
-        monthsList2.items.addAll(months)
-
-        if (year == "0") year = "0".also {
-            monthsList.selectionModel.clearSelection()
-            monthsList.items.clear()
-            monthsList.items.add("0")
-            monthsList.selectionModel.select(0)
-        } else {
-            val months = db.getMonthsForYear(year, serialNumber).sorted()
-            println("months = $months")
-            monthsList.items.clear()
-            monthsList.items.add("0")
-            monthsList.items.addAll(months)
-        }
-//        db.showRecordsForYear(year, table)
-    }
-
-    fun monthSelect(actionEvent: ActionEvent) {
-        month = monthsList2.checkModel.checkedItems[0]
-        oldMonth = month
-//        month = monthsList?.value.toString()
-        val days = db.getDaysForMonth(month, year, serialNumber).sorted()
-        println("days for month = $days")
-        daysList2.items.clear()
-        daysList2.items.add(" ")
-        daysList2.items.addAll(days)
-
-        println("month = $month")
-        if (month == "0") month = "0".also {
-            daysList.selectionModel.clearSelection()
-            daysList.items.clear()
-            daysList.items.add(" ")
-            daysList.selectionModel.select(0)
-        }
-        else {
-            val days = db.getDaysForMonth(month, year, serialNumber).sorted()
-            println("days for month = $days")
-            daysList.items.clear()
-            daysList.items.add(" ")
-            daysList.items.addAll(days)
+            monthsList2.items.clear()
+            monthsList2.items.add("0")
+            daysList2.items.clear()
+//            checkComboBoxes.db = db
         }
     }
 
-    fun daySelect(actionEvent: ActionEvent) {
-        day = daysList?.value.toString()
-        if (day == "0") day = "0"
-        println("day = $day")
-    }
-
-    fun serialNumberSelect(actionEvent: ActionEvent) {
-        println("in serialNumberSelect")
-        serialNumber = serialsList2.checkModel.checkedItems[0]
-        oldSerialNumber = serialNumber
-        println("serialNumber2 = $serialNumber")
-        val years = db.getYearsForSerialNumber(serialNumber).sorted()
-        println("years = $years")
-        yearsList2.items.clear()
-        yearsList2.items.add("0")
-        yearsList2.items.addAll(years)
-//        serialNumber = serialsList?.selectionModel?.selectedItem.toString()
-        println("serialNumber = $serialNumber")
-        if (serialNumber == "0") serialNumber = "0".also {
-            yearsList.selectionModel.clearSelection()
-            yearsList.items.clear()
-            yearsList.items.add(" ")
-            yearsList.selectionModel.select(0)
-        } else {
-            val years = db.getYearsForSerialNumber(serialNumber).sorted()
-            println("years = $years")
-            yearsList.items.clear()
-            yearsList.items.add("0")
-            yearsList.items.addAll(years)
-        }
-    }
 
     fun openDiagramWindow(actionEvent: ActionEvent) {
 //        val fxmlPath = "${getCurrentPath()}/DiagramWindow.fxml"

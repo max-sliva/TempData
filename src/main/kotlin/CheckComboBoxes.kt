@@ -11,6 +11,8 @@ class CheckComboBoxes(topPane: Pane, db: DBwork) {
     var monthsList2: CheckComboBox<String>
     var daysList2: CheckComboBox<String>
     var db: DBwork
+//    var db = DBwork()
+//        set(value) {field = value}
 
     var serialNumber = "0"
     var oldSerialNumber = "0"
@@ -23,12 +25,13 @@ class CheckComboBoxes(topPane: Pane, db: DBwork) {
 
     init {
         this.db = db
-
+        println("in CheckComboBoxes")
         daysList2 = CheckComboBox<String>().apply { title = "Days" }
         daysList2.checkModel.checkedItems.addListener(ListChangeListener<String?> { c -> clearList(c, daysList2) })
         daysList2.addEventHandler(ComboBox.ON_HIDDEN) { event ->
             println("${(event.source as CheckComboBox<String>).title} is now hidden.")
         }
+        println("after daysList2")
         monthsList2 = CheckComboBox<String>().apply { title = "Months" }
         monthsList2.checkModel.checkedItems.addListener(ListChangeListener<String?> { c -> clearList(c, monthsList2) })
         monthsList2.addEventHandler(ComboBox.ON_HIDDEN) { event ->
@@ -44,6 +47,7 @@ class CheckComboBoxes(topPane: Pane, db: DBwork) {
                 daysList2.isDisable = true
             }
         }
+        println("after monthsList2")
         yearsList2 = CheckComboBox<String>().apply { title = "Years" }
         yearsList2.checkModel.checkedItems.addListener(ListChangeListener<String?> { c -> clearList(c, yearsList2) })
         yearsList2.addEventHandler(ComboBox.ON_HIDDEN) { event ->
@@ -72,7 +76,7 @@ class CheckComboBoxes(topPane: Pane, db: DBwork) {
             }
 
         }
-
+        println("after yearsList2")
         serialsList2 = CheckComboBox<String>().apply { title = "Serials" }
         serialsList2.checkModel.checkedItems.addListener(ListChangeListener<String?> { c -> clearList(c, serialsList2)})
         serialsList2.addEventHandler(ComboBox.ON_HIDDEN) { event ->
@@ -95,7 +99,9 @@ class CheckComboBoxes(topPane: Pane, db: DBwork) {
                 daysList2.isDisable = true
             }
         }
+        println("after serialsList2")
         topPane.children.addAll(serialsList2, yearsList2, monthsList2, daysList2)
+        println("end init in CheckComboBoxes")
     }
 
     private fun clearList(c: ListChangeListener.Change<out String>?, list: CheckComboBox<String>) {
@@ -125,6 +131,7 @@ class CheckComboBoxes(topPane: Pane, db: DBwork) {
             }
         }
     }
+
 
     fun serialNumberSelect(actionEvent: ActionEvent) {
         println("in serialNumberSelect")
