@@ -1,3 +1,4 @@
+import javafx.application.Platform
 import javafx.collections.ListChangeListener
 import javafx.event.ActionEvent
 import javafx.scene.control.ComboBox
@@ -140,9 +141,11 @@ class CheckComboBoxes(topPane: Pane, db: DBwork) {
         println("serialNumber2 = $serialNumber")
         val years = db.getYearsForSerialNumber(serialNumber).sorted()
         println("years = $years")
-        yearsList2.items.clear()
-        yearsList2.items.add("0")
-        yearsList2.items.addAll(years)
+        Platform.runLater {
+            yearsList2.items.clear()
+            yearsList2.items.add("0")
+            yearsList2.items.addAll(years)
+        }
 //        serialNumber = serialsList?.selectionModel?.selectedItem.toString()
         println("serialNumber = $serialNumber")
 //        if (serialNumber == "0") serialNumber = "0".also {
