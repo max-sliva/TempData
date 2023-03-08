@@ -15,15 +15,7 @@
       <StackPane prefHeight="400.0" prefWidth="505.0" styleClass="custom-dashed-border-blue" BorderPane.alignment="CENTER">
          <children>
             <Pane fx:id="paneForDiagram" prefHeight="200.0" prefWidth="200.0" />
-            <TabPane fx:id="tabPane" prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" visible="false">
-              <tabs>
-                <Tab text="0m">
-                  <content>
-                    <AnchorPane fx:id="tabForDiagram" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-                  </content>
-                </Tab>
-              </tabs>
-            </TabPane>
+            <TabPane fx:id="tabPane" prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" visible="false" />
          </children></StackPane>
    </center>
    <top>

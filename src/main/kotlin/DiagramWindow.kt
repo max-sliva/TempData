@@ -11,6 +11,7 @@ import javafx.scene.chart.BarChart
 import javafx.scene.chart.CategoryAxis
 import javafx.scene.chart.NumberAxis
 import javafx.scene.chart.XYChart
+import javafx.scene.control.Tab
 import javafx.scene.control.TabPane
 import javafx.scene.layout.AnchorPane
 import javafx.scene.layout.Pane
@@ -72,11 +73,22 @@ class DiagramWindow: Initializable {
         val yLabel =  "Temperature"
         val yValues =  mapOf(Pair("0:01:00", arrayOf(4.19, 5.107, 5.68)), Pair("3:01:00", arrayOf(3.18, 4.478, 5.428)), Pair("6:01:00", arrayOf(2.485, 3.911, 5.05)))
         val dataSeries = arrayOf("1000", "1001", "1002")
-        createBarChartForDay(title, xLabel, xValues, yLabel, yValues, dataSeries)
+        if (paneForDiagram.isVisible) {
+            val bc = createBarChartForDay(title, xLabel, xValues, yLabel, yValues, dataSeries)
+            paneForDiagram.children.add(bc)
+        }
+        if (tabPane.isVisible){
+            dataSeries.forEach {
+                val tab = Tab(it)
+                tabPane.tabs.add(tab)
+        //todo поправить работу ф-ии для одного значения
+                tab.contentProperty().set(createBarChartForDay(it, xLabel, xValues, yLabel, yValues, arrayOf(it)))
+            }
+        }
         println("Show diagram")
     }
 
-    private fun createBarChartForDay(title: String, xLabel: String, xValues: Array<String>, yLabel: String, yValues: Map<String, Array<Double>>, dataSeries: Array<String>) {
+    private fun createBarChartForDay(title: String, xLabel: String, xValues: Array<String>, yLabel: String, yValues: Map<String, Array<Double>>, dataSeries: Array<String>): BarChart<String, Number> {
 //        var bc : BarChart<String, Number>? = null //объект-диаграмма
         val xAxis = CategoryAxis() //создаем ось ОХ
         val yAxis = NumberAxis() //создаем ось OY
@@ -95,13 +107,25 @@ class DiagramWindow: Initializable {
         // задаем данные
         xValues.forEach {//цикл по значения оси Х - по временам снятия показаний
             val yArray = yValues[it] //берем массив значений данного времени
-            var i = 0
-            yArray?.forEach { it2 -> //цикл по массиву значений
-                series[i++].data.add(XYChart.Data(it, it2)) //добавляем в соответствующую серию нужные данные
+            if (series.size>1) { //для нескольких серий данных
+                var i = 0
+                yArray?.forEach { it2 -> //цикл по массиву значений
+                    series[i++].data.add(XYChart.Data(it, it2)) //добавляем в соответствующую серию нужные данные
+                }
+            } else { //для одной серии данных
+                try {
+//                    if (yArray!![title.toInt() - 1000] != null) {
+                        print("$it = ")
+                        println("${yArray!![title.toInt() - 1000]}")
+                        series[0].data.add(XYChart.Data(it, yArray[title.toInt() - 1000]))
+//                    }
+                } catch (e:NullPointerException) { //если данных меньше чем значений в xValues
+                    return@forEach //выходим из forEach
+                }
             }
         }
         bc.data.addAll(series) //добавляем созданные наборы в диаграмму
-        if (paneForDiagram.isVisible) paneForDiagram.children.add(bc)
+        return bc
     }
 
     fun allInOneClick(actionEvent: ActionEvent) {
