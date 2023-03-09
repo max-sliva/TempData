@@ -53,4 +53,7 @@
         </columns>
       </TableView>
    </center>
+   <bottom>
+      <Label text="Size=    Average = " BorderPane.alignment="CENTER" />
+   </bottom>
 </BorderPane>

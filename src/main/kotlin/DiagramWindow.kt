@@ -71,7 +71,7 @@ class DiagramWindow: Initializable {
         val xLabel =  "Times"
         val xValues =  arrayOf("0:01:00", "3:01:00", "6:01:00", "9:01:00", "12:01:00", "15:01:00", "18:01:00", "21:01:00")
         val yLabel =  "Temperature"
-        val yValues =  mapOf(Pair("0:01:00", arrayOf(4.19, 5.107, 5.68)), Pair("3:01:00", arrayOf(3.18, 4.478, 5.428)), Pair("6:01:00", arrayOf(2.485, 3.911, 5.05)))
+        val yValues =  mapOf(Pair("0:01:00", arrayOf(-4.19, 5.107, 5.68)), Pair("3:01:00", arrayOf(3.18, -4.478, 5.428)), Pair("6:01:00", arrayOf(2.485, 3.911, -5.05)))
         val dataSeries = arrayOf("1000", "1001", "1002")
         if (paneForDiagram.isVisible) {
             val bc = createBarChartForDay(title, xLabel, xValues, yLabel, yValues, dataSeries)
@@ -95,7 +95,7 @@ class DiagramWindow: Initializable {
 //задаем формат подписей делений оси OY – со знаком °C
         yAxis.tickLabelFormatter = NumberAxis.DefaultFormatter(yAxis, null, "°C")
         var bc = BarChart<String, Number>(xAxis, yAxis) //создаем столбчатую диаграмму с осями xAxis и yAxis
-        bc.title = title // задаем название диаграммы
+        bc.title = if (!title.contains(".")) ((title.toInt() - 1000.0) / 10).toString()+" м" else title// задаем название диаграммы
         xAxis.label = xLabel //задаем общую подпись оси ОХ
         xAxis.categories = FXCollections.observableArrayList(listOf(*xValues))//задаем подписи категорий оси ОХ
         yAxis.label = yLabel //задаем общую подпись оси OY
