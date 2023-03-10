@@ -14,6 +14,7 @@ import javafx.scene.chart.XYChart
 import javafx.scene.control.Tab
 import javafx.scene.control.TabPane
 import javafx.scene.layout.AnchorPane
+import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import kotlin.collections.ArrayList
 
@@ -21,7 +22,7 @@ class DiagramWindow: Initializable {
     @FXML
     lateinit var tabPane: TabPane
     lateinit var tabForDiagram: AnchorPane
-    lateinit var paneForDiagram: Pane
+    lateinit var paneForDiagram: HBox
     lateinit var showDiagramBtn: Button
 
     lateinit var boxForCheckCombos: VBox
@@ -125,6 +126,9 @@ class DiagramWindow: Initializable {
             }
         }
         bc.data.addAll(series) //добавляем созданные наборы в диаграмму
+        bc.minWidth = 0.0
+        bc.prefWidth = 2000.0 //чтобы диаграмма менялась с изменением окна
+//        bc.maxHeightProperty().bind(paneForDiagram.maxHeightProperty())
         return bc
     }
 
