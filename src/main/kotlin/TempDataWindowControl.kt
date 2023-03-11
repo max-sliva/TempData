@@ -21,6 +21,7 @@ import java.util.*
 
 class TempDataWindowControl : Initializable {
 
+    lateinit var diagramBtn: Button
     lateinit var diagramWindowShow: MenuItem
     lateinit var textLabel: Label
 
@@ -137,7 +138,8 @@ class TempDataWindowControl : Initializable {
     fun showData(actionEvent: ActionEvent) {
         val task = createTask(::dataWork)
         Thread(task).start()
-        diagramWindowShow.isDisable = false
+//        diagramWindowShow.isDisable = false
+        diagramBtn.isDisable = false
     }
 
     fun dataWork() { //для показа данных из БД
@@ -258,9 +260,11 @@ class TempDataWindowControl : Initializable {
             topPane.children.remove(monthsList2)
             topPane.children.remove(daysList2)
             topPane.children.remove(showBtn)
+            topPane.children.remove(diagramBtn)
             println("db size in initialize = ${db.dbSize()}")
             var checkComboBoxes = CheckComboBoxes(topPane, db)
             topPane.children.add(showBtn)
+            topPane.children.add(diagramBtn)
             serialsList2 = checkComboBoxes.getSerials()
             yearsList2 = checkComboBoxes.getYears().apply { isDisable = true }
             monthsList2 = checkComboBoxes.getMonths().apply { isDisable = true }
@@ -285,41 +289,61 @@ class TempDataWindowControl : Initializable {
 //        val fxmlPath = "${getCurrentPath()}/DiagramWindow.fxml"
 //        val fxmlLoader = FXMLLoader(URL("file:$fxmlPath")) //для jar-файла
 //        val fxmlLoader = FXMLLoader(this.javaClass.getResource("ferreFrame.fxml")) //для запуска из IDE
+//        val fxmlLoader = getLoader("DiagramWindow.fxml")
+//        val stage = Stage() //создаем новое окно
+//        stage.scene = Scene(fxmlLoader.load()) //загружаем в него данные
+//        val diagramWindowClass = fxmlLoader.getController<DiagramWindow>()
+//        stage.initModality(Modality.WINDOW_MODAL) //делаем окно модальным
+//        stage.initOwner(mainPane.scene.window) //и его владельцем делаем главное окно
+//        stage.show()
+    }
+
+    fun createDiagram(actionEvent: ActionEvent) {
         val fxmlLoader = getLoader("DiagramWindow.fxml")
         val stage = Stage() //создаем новое окно
         stage.scene = Scene(fxmlLoader.load()) //загружаем в него данные
         val diagramWindowClass = fxmlLoader.getController<DiagramWindow>()
-        stage.initModality(Modality.WINDOW_MODAL) //делаем окно модальным
+//        stage.initModality(Modality.WINDOW_MODAL) //делаем окно модальным
         stage.initOwner(mainPane.scene.window) //и его владельцем делаем главное окно
         stage.show()
+        table.columns.forEach {
+            println("${it.text}")
+        }
+//        var keys = table.columns.filter {
+//
+////            startsWith('1')
+//        }
+        diagramWindowClass.showDiagram(ActionEvent())
     }
 
-//    fun fillData(data: ObservableList<Map<String, StringProperty>>) {
-//        data.addAll(
-//            mutableMapOf(
-//                Pair("date", SimpleStringProperty("10/1/2002")),
-//                Pair("time", SimpleStringProperty("11:11")),
-//                Pair("temp 1", SimpleStringProperty("3,11"))
-//            ),
-//            mutableMapOf(
-//                Pair("date", SimpleStringProperty("11/11/2021")),
-//                Pair("time", SimpleStringProperty("12:10")),
-//                Pair("temp 1", SimpleStringProperty("4,3"))
-//            ),
-//        )
-//    }
-//
-//    fun fillData1(data: ObservableList<List<StringProperty>>) {
-//        val firstRow = ArrayList<StringProperty>(3)
-//        firstRow.add(0, SimpleStringProperty("31/12/2002"))
-//        firstRow.add(1, SimpleStringProperty("10:12"))
-//        firstRow.add(2, SimpleStringProperty("100"))
-//
-//        val secondRow = ArrayList<StringProperty>(3)
-//        secondRow.add(0, SimpleStringProperty("30/1/2012"))
-//        secondRow.add(1, SimpleStringProperty("11:12"))
-//        secondRow.add(2, SimpleStringProperty("102"))
-//        data.addAll(firstRow, secondRow)
-//    }
+    /*
+    fun fillData(data: ObservableList<Map<String, StringProperty>>) {
+    data.addAll(
+    mutableMapOf(
+    Pair("date", SimpleStringProperty("10/1/2002")),
+    Pair("time", SimpleStringProperty("11:11")),
+    Pair("temp 1", SimpleStringProperty("3,11"))
+    ),
+    mutableMapOf(
+    Pair("date", SimpleStringProperty("11/11/2021")),
+    Pair("time", SimpleStringProperty("12:10")),
+    Pair("temp 1", SimpleStringProperty("4,3"))
+    ),
+    )
+    }
+
+    fun fillData1(data: ObservableList<List<StringProperty>>) {
+    val firstRow = ArrayList<StringProperty>(3)
+    firstRow.add(0, SimpleStringProperty("31/12/2002"))
+    firstRow.add(1, SimpleStringProperty("10:12"))
+    firstRow.add(2, SimpleStringProperty("100"))
+
+    val secondRow = ArrayList<StringProperty>(3)
+    secondRow.add(0, SimpleStringProperty("30/1/2012"))
+    secondRow.add(1, SimpleStringProperty("11:12"))
+    secondRow.add(2, SimpleStringProperty("102"))
+    data.addAll(firstRow, secondRow)
+    }
+    */
 
 }

@@ -33,7 +33,8 @@
 <!--                  <ComboBox fx:id="yearsList" onAction="#yearSelect" prefHeight="26.0" prefWidth="94.0" promptText="Year" />-->
 <!--                  <ComboBox fx:id="monthsList" onAction="#monthSelect" prefHeight="26.0" prefWidth="101.0" promptText="Month" />-->
 <!--                  <ComboBox fx:id="daysList" onAction="#daySelect" prefHeight="26.0" prefWidth="83.0" promptText="Day" />-->
-                  <Button fx:id="showBtn" mnemonicParsing="false" onAction="#showData" text="Show" />
+                  <Button fx:id="showBtn" mnemonicParsing="false" onAction="#showData" text="Show data" />
+                  <Button fx:id="diagramBtn" disable="true" mnemonicParsing="false" onAction="#createDiagram" text="Create diagram" />
                </children>
             </HBox>
             <HBox prefHeight="16.0" prefWidth="766.0">
