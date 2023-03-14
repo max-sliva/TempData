@@ -9,9 +9,7 @@ import javafx.scene.control.*
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
 import javafx.stage.FileChooser
-import javafx.stage.Modality
 import javafx.stage.Stage
-import org.apache.commons.beanutils.BeanUtils
 import org.controlsfx.control.CheckComboBox
 import java.io.*
 import java.net.URL
@@ -62,7 +60,7 @@ class TempDataWindowControl : Initializable {
     var day = "0"
     var oldDay = "0"
     var fileChooser = FileChooser()
-
+    lateinit var keys: List<String>
     fun fileWork(file: File) {
         val records = readCSVfromFile2(file)
         headers[0] = "Date"
@@ -155,7 +153,7 @@ class TempDataWindowControl : Initializable {
 
 //        println("keys = ${data[0].keys}")
             println("serialNumber = $serialNumber")
-            var keys = data?.get(0)!!.keys.sorted()
+            keys = data?.get(0)!!.keys.sorted()
             keys = keys.minusElement("Date")
             keys = keys.minusElement("Time")
             keys = keys.filter {//для показа только данных температуры (они начинаются с 1)
@@ -306,14 +304,39 @@ class TempDataWindowControl : Initializable {
 //        stage.initModality(Modality.WINDOW_MODAL) //делаем окно модальным
         stage.initOwner(mainPane.scene.window) //и его владельцем делаем главное окно
         stage.show()
-        table.columns.forEach {
-            println("${it.text}")
-        }
+//        table.columns.forEach {
+//            print("${it.text} ")
+//        }
+        println(keys)
 //        var keys = table.columns.filter {
 //
 ////            startsWith('1')
 //        }
-        diagramWindowClass.showDiagram(ActionEvent())
+//        if (!daysList2.isDisable && daysList2.checkModel.checkedItems.size == 1) {
+        val data = table.items
+        var dates = setOf<String?>()  //множество для дат
+        val xValues = arrayOf("0:01:00", "3:01:00", "6:01:00", "9:01:00", "12:01:00", "15:01:00", "18:01:00", "21:01:00")
+//        val yValues: Map<String, Array<Double>> = mapOf(Pair("0:01:00", arrayOf(-4.19, 5.107, 5.68, 6.0)), Pair("3:01:00", arrayOf(3.18, -4.478, 5.428, 4.0)), Pair("6:01:00", arrayOf(2.485, 3.911, -5.05, 3.0)))
+        var yValues = mutableMapOf<String, Array<Double>>()
+        data.forEach {//цикл по данным таблицы
+            val dateProp = it["Date"]?.value //дата
+            dates=dates.plusElement(dateProp) //добавляем в мн-во
+            var seriesArray = arrayOf<Double>()  //массив температур на разных глубинах
+            keys.forEach {series-> //меняем запятую на точку
+                seriesArray = seriesArray.plus(it[series]?.value!!.replace(',','.').toDouble())
+            }
+            val time = it["Time"]?.value.toString() //время
+            yValues[time] = seriesArray //данные по температурам на разных глубинах для этого времени
+        }
+//        println("set of dates = $dates")
+//        println("map of times = ")
+//        yValues.forEach { (time, array) ->
+//            println("$time: ${array.asList()}")
+//        }
+        if (dates.size==1) //если выбрана одна дата
+            diagramWindowClass.showDiagram(dates.first().toString(), "Times", xValues, "Temperature", "°C", yValues, keys.toTypedArray())
+//todo сделать для нескольких дат, для месяца, для нескольких месяцев и т.д.
+
     }
 
     /*

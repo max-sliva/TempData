@@ -36,25 +36,6 @@ class DiagramWindow: Initializable {
     override fun initialize(location: URL?, resources: ResourceBundle?) {
         println("Diagram window")
         db = DBwork()
-//        boxForCheckCombos.children.remove(showDiagramBtn)
-//        var checkComboBoxes = CheckComboBoxes(boxForCheckCombos, db)
-//        val serialNumbers = db.getSerialNumbers()
-//        serialsList2 = checkComboBoxes.getSerials()
-//        yearsList2 = checkComboBoxes.getYears().apply { isDisable = true }
-//        monthsList2 = checkComboBoxes.getMonths().apply { isDisable = true }
-//        daysList2 = checkComboBoxes.getDays().apply { isDisable = true }
-//
-//        serialsList2.items.clear()
-//        serialsList2.items.add("0")
-//        serialsList2.items.addAll(serialNumbers)
-//
-//        yearsList2.items.clear()
-//        yearsList2.items.add("0")
-////        yearsList2.items.addAll(years)
-//        monthsList2.items.clear()
-//        monthsList2.items.add("0")
-//        daysList2.items.clear()
-//        boxForCheckCombos.children.add(showDiagramBtn)
     }
 
     fun checkBoxPaneAddAll(
@@ -67,23 +48,20 @@ class DiagramWindow: Initializable {
         println("added")
     }
 
-    fun showDiagram(actionEvent: ActionEvent) {
-        val title = "17.10.2019"
-        val xLabel =  "Times"
-        val xValues =  arrayOf("0:01:00", "3:01:00", "6:01:00", "9:01:00", "12:01:00", "15:01:00", "18:01:00", "21:01:00")
-        val yLabel =  "Temperature"
-        val yValues =  mapOf(Pair("0:01:00", arrayOf(-4.19, 5.107, 5.68, 6.0)), Pair("3:01:00", arrayOf(3.18, -4.478, 5.428, 4.0)), Pair("6:01:00", arrayOf(2.485, 3.911, -5.05, 3.0)))
-        seriesNames = arrayOf("1000", "1001", "1002", "1004")
-        if (paneForDiagram.isVisible && paneForDiagram.children.size==0) {
-            val bc = createBarChartForDay(title, xLabel, xValues, yLabel, yValues, seriesNames)
+    fun showDiagram(title: String = "17.10.2019",
+                    xLabel: String =  "Times",
+                    xValues: Array<String> =  arrayOf("0:01:00", "3:01:00", "6:01:00", "9:01:00", "12:01:00", "15:01:00", "18:01:00", "21:01:00"),
+                    yLabel: String =  "Temperature",
+                    ySuffix: String = "°C",
+                    yValues: Map<String, Array<Double>> =  mapOf(Pair("0:01:00", arrayOf(-4.19, 5.107, 5.68, 6.0)), Pair("3:01:00", arrayOf(3.18, -4.478, 5.428, 4.0)), Pair("6:01:00", arrayOf(2.485, 3.911, -5.05, 3.0))),
+                    arraySeriesNames: Array<String> = arrayOf("1000", "1001", "1002", "1004")) {
+        seriesNames = arraySeriesNames
+            val bc = createBarChartForDay(title, xLabel, xValues, yLabel, ySuffix, yValues, seriesNames)
             paneForDiagram.children.add(bc)
-        }
-        if (tabPane.isVisible && tabPane.tabs.size==0){
             seriesNames.forEach {
                 val tab = Tab(it)
                 tabPane.tabs.add(tab)
-                tab.contentProperty().set(createBarChartForDay(it, xLabel, xValues, yLabel, yValues, arrayOf(it)))
-            }
+                tab.contentProperty().set(createBarChartForDay(it, xLabel, xValues, yLabel, ySuffix, yValues, arrayOf(it)))
         }
         println("Show diagram")
     }
@@ -97,12 +75,12 @@ class DiagramWindow: Initializable {
      * @param yValues Значения шкалы по оси ОУ
      * @param dataSeries Названия серий данных
      */
-    private fun createBarChartForDay(title: String, xLabel: String, xValues: Array<String>, yLabel: String, yValues: Map<String, Array<Double>>, dataSeries: Array<String>): BarChart<String, Number> {
+    fun createBarChartForDay(title: String, xLabel: String, xValues: Array<String>, yLabel: String, ySuffix: String, yValues: Map<String, Array<Double>>, dataSeries: Array<String>): BarChart<String, Number> {
 //        var bc : BarChart<String, Number>? = null //объект-диаграмма
         val xAxis = CategoryAxis() //создаем ось ОХ
         val yAxis = NumberAxis() //создаем ось OY
 //задаем формат подписей делений оси OY – со знаком °C
-        yAxis.tickLabelFormatter = NumberAxis.DefaultFormatter(yAxis, null, "°C")
+        yAxis.tickLabelFormatter = NumberAxis.DefaultFormatter(yAxis, null, ySuffix)
         var bc = BarChart<String, Number>(xAxis, yAxis) //создаем столбчатую диаграмму с осями xAxis и yAxis
         bc.title = if (!title.contains(".") && title.startsWith('1')) ((title.toInt() - 1000.0) / 10).toString()+" м" else title// задаем название диаграммы
         xAxis.label = xLabel //задаем общую подпись оси ОХ
@@ -149,12 +127,12 @@ class DiagramWindow: Initializable {
     fun allInOneClick(actionEvent: ActionEvent) {
         paneForDiagram.isVisible = true
         tabPane.isVisible = false
-        showDiagram(ActionEvent())
+//        showDiagram()
     }
 
     fun inTabsClick(actionEvent: ActionEvent) {
         paneForDiagram.isVisible = false
         tabPane.isVisible = true
-        showDiagram(ActionEvent())
+//        showDiagram()
     }
 }

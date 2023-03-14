@@ -109,26 +109,28 @@ class CheckComboBoxes(topPane: Pane, db: DBwork) {
         if (c!!.list.contains("0")) {
             println("Clear, item[0] = ${list.checkModel.checkedItems[0]}")
 //            list.checkModel.checkedItems.clear()
-            list.checkModel.clearCheck(0)
-            list.checkModel.clearChecks()
-            if (list == serialsList2) {
-                oldSerialNumber = "0"
-                yearsList2.items.clear()
-                yearsList2.items.add("0")
-                monthsList2.items.clear()
-                monthsList2.items.add("0")
-                daysList2.items.clear()
-                daysList2.items.add("0")
-            }
-            if (list == yearsList2) {
-                monthsList2.items.clear()
-                monthsList2.items.add("0")
-                daysList2.items.clear()
-                daysList2.items.add("0")
-            }
-            if (list == monthsList2) {
-                daysList2.items.clear()
-                daysList2.items.add("0")
+            Platform.runLater {
+                list.checkModel.clearCheck(0)
+                list.checkModel.clearChecks()
+                if (list == serialsList2) {
+                    oldSerialNumber = "0"
+                    yearsList2.items.clear()
+                    yearsList2.items.add("0")
+                    monthsList2.items.clear()
+                    monthsList2.items.add("0")
+                    daysList2.items.clear()
+                    daysList2.items.add("0")
+                }
+                if (list == yearsList2) {
+                    monthsList2.items.clear()
+                    monthsList2.items.add("0")
+                    daysList2.items.clear()
+                    daysList2.items.add("0")
+                }
+                if (list == monthsList2) {
+                    daysList2.items.clear()
+                    daysList2.items.add("0")
+                }
             }
         }
     }
@@ -169,9 +171,11 @@ class CheckComboBoxes(topPane: Pane, db: DBwork) {
         println("year = $year")
         val months = db.getMonthsForYear(year, serialNumber).sorted()
         println("months = $months")
-        monthsList2.items.clear()
-        monthsList2.items.add("0")
-        monthsList2.items.addAll(months)
+        Platform.runLater {
+            monthsList2.items.clear()
+            monthsList2.items.add("0")
+            monthsList2.items.addAll(months)
+        }
 
 //        if (year == "0") year = "0".also {
 //            monthsList.selectionModel.clearSelection()
@@ -194,9 +198,11 @@ class CheckComboBoxes(topPane: Pane, db: DBwork) {
 //        month = monthsList?.value.toString()
         val days = db.getDaysForMonth(month, year, serialNumber).sorted()
         println("days for month = $days")
-        daysList2.items.clear()
-        daysList2.items.add("0")
-        daysList2.items.addAll(days)
+        Platform.runLater {
+            daysList2.items.clear()
+            daysList2.items.add("0")
+            daysList2.items.addAll(days)
+        }
 
 //        println("month = $month")
 //        if (month == "0") month = "0".also {
