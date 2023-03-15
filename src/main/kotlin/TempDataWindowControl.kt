@@ -175,7 +175,7 @@ class TempDataWindowControl : Initializable {
             println("data size = ${data.size}")
         }
     }
-//todo добавить различные фильтры по данным таблицы - по времени, темппературе и т.д.
+//todo добавить различные фильтры по данным таблицы - по времени, температуре и т.д.
     private fun getDataFromDB(): ObservableList<Map<String, StringProperty>>? {
         var data: ObservableList<Map<String, StringProperty>>? = null
         if (serialsList2.checkModel.checkedItems.size != 0) serialNumber = serialsList2.checkModel.checkedItems[0]
