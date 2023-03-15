@@ -1,12 +1,8 @@
 import javafx.collections.FXCollections
+import javafx.event.ActionEvent
 import javafx.fxml.FXML
 import javafx.fxml.Initializable
-import javafx.scene.control.Button
-import javafx.scene.layout.VBox
-import org.controlsfx.control.CheckComboBox
-import java.net.URL
-import java.util.*
-import javafx.event.ActionEvent
+import javafx.scene.Node
 import javafx.scene.chart.BarChart
 import javafx.scene.chart.CategoryAxis
 import javafx.scene.chart.NumberAxis
@@ -15,8 +11,9 @@ import javafx.scene.control.Tab
 import javafx.scene.control.TabPane
 import javafx.scene.layout.AnchorPane
 import javafx.scene.layout.HBox
-import javafx.scene.layout.Pane
-import kotlin.collections.ArrayList
+import org.controlsfx.control.CheckComboBox
+import java.net.URL
+import java.util.*
 
 class DiagramWindow: Initializable {
     @FXML
@@ -120,6 +117,8 @@ class DiagramWindow: Initializable {
         bc.data.addAll(series) //добавляем созданные наборы в диаграмму
         bc.minWidth = 0.0
         bc.prefWidth = 2000.0 //чтобы диаграмма менялась с изменением окна
+        val node = bc.lookup(".data0.chart-bar")
+        println("data0.chart-bar style = ${node.style}")
 //        bc.maxHeightProperty().bind(paneForDiagram.maxHeightProperty())
         return bc
     }

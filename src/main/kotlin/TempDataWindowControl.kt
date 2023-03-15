@@ -11,9 +11,13 @@ import javafx.scene.layout.HBox
 import javafx.stage.FileChooser
 import javafx.stage.Stage
 import org.controlsfx.control.CheckComboBox
-import java.io.*
+import java.io.BufferedReader
+import java.io.File
+import java.io.FileInputStream
+import java.io.InputStreamReader
 import java.net.URL
 import java.nio.file.Paths
+import java.text.SimpleDateFormat
 import java.util.*
 
 
@@ -335,8 +339,29 @@ class TempDataWindowControl : Initializable {
 //        }
         if (dates.size==1) //если выбрана одна дата
             diagramWindowClass.showDiagram(dates.first().toString(), "Times", xValues, "Temperature", "°C", yValues, keys.toTypedArray())
+        else {
+            val months = getMonths(dates)
+            if (months.size==1) {
+                val cal = Calendar.getInstance()
+                cal.set(Calendar.MONTH, months.first().toInt());
+                val monthDate = SimpleDateFormat("MMMM")
+                val monthName = monthDate.format(cal.time)
+                println("month name = $monthName")
+                //todo сделать подсчет средних значений за день для каждой глубины и записывать их в массив, а потом в мап по дням
+            }
+        }
 //todo сделать для нескольких дат, для месяца, для нескольких месяцев и т.д.
 
+    }
+
+    private fun getMonths(dates: Set<String?>): Set<String> {
+        var months = setOf<String>()
+//        print("months = ")
+        dates.forEach{
+            val month = it?.split(".")!![1]
+            months = months.plus(month)
+        }
+        return months
     }
 
     /*
