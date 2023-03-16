@@ -11,6 +11,7 @@ import javafx.scene.control.Tab
 import javafx.scene.control.TabPane
 import javafx.scene.layout.AnchorPane
 import javafx.scene.layout.HBox
+import javafx.stage.Stage
 import org.controlsfx.control.CheckComboBox
 import java.net.URL
 import java.util.*
@@ -44,21 +45,31 @@ class DiagramWindow: Initializable {
 //        boxForCheckCombos.children.addAll(serialsList2, yearsList2, monthsList2, daysList2)
         println("added")
     }
-
+    /**
+     * Вызывает createBarChartForDay для создания диаграмм по нужным параметрам
+     * @param title Заголовок диаграммы
+     * @param xLabel Подпись для оси ОХ
+     * @param xValues Значения шкалы по оси ОХ
+     * @param yLabel Подпись для оси ОУ
+     * @param yValues Значения шкалы по оси ОУ
+     * @param arraySeriesNames Названия серий данных
+     */
     fun showDiagram(title: String = "17.10.2019",
                     xLabel: String =  "Times",
-                    xValues: Array<String> =  arrayOf("0:01:00", "3:01:00", "6:01:00", "9:01:00", "12:01:00", "15:01:00", "18:01:00", "21:01:00"),
+                    xValues: Array<String?> =  arrayOf("0:01:00", "3:01:00", "6:01:00", "9:01:00", "12:01:00", "15:01:00", "18:01:00", "21:01:00"),
                     yLabel: String =  "Temperature",
                     ySuffix: String = "°C",
-                    yValues: Map<String, Array<Double>> =  mapOf(Pair("0:01:00", arrayOf(-4.19, 5.107, 5.68, 6.0)), Pair("3:01:00", arrayOf(3.18, -4.478, 5.428, 4.0)), Pair("6:01:00", arrayOf(2.485, 3.911, -5.05, 3.0))),
+                    yValues: Map<String?, Array<Double>> =  mapOf(Pair("0:01:00", arrayOf(-4.19, 5.107, 5.68, 6.0)), Pair("3:01:00", arrayOf(3.18, -4.478, 5.428, 4.0)), Pair("6:01:00", arrayOf(2.485, 3.911, -5.05, 3.0))),
                     arraySeriesNames: Array<String> = arrayOf("1000", "1001", "1002", "1004")) {
+        val window = tabPane.scene.window as Stage
+        window.title = title
         seriesNames = arraySeriesNames
-            val bc = createBarChartForDay(title, xLabel, xValues, yLabel, ySuffix, yValues, seriesNames)
-            paneForDiagram.children.add(bc)
-            seriesNames.forEach {
-                val tab = Tab(it)
-                tabPane.tabs.add(tab)
-                tab.contentProperty().set(createBarChartForDay(it, xLabel, xValues, yLabel, ySuffix, yValues, arrayOf(it)))
+        val bc = createBarChartForDay(title, xLabel, xValues, yLabel, ySuffix, yValues, seriesNames)
+        paneForDiagram.children.add(bc)
+        seriesNames.forEach {
+            val tab = Tab(it)
+            tabPane.tabs.add(tab)
+            tab.contentProperty().set(createBarChartForDay(it, xLabel, xValues, yLabel, ySuffix, yValues, arrayOf(it)))
         }
         println("Show diagram")
     }
@@ -72,7 +83,7 @@ class DiagramWindow: Initializable {
      * @param yValues Значения шкалы по оси ОУ
      * @param dataSeries Названия серий данных
      */
-    fun createBarChartForDay(title: String, xLabel: String, xValues: Array<String>, yLabel: String, ySuffix: String, yValues: Map<String, Array<Double>>, dataSeries: Array<String>): BarChart<String, Number> {
+    fun createBarChartForDay(title: String, xLabel: String, xValues: Array<String?>, yLabel: String, ySuffix: String, yValues: Map<String?, Array<Double>>, dataSeries: Array<String>): BarChart<String, Number> {
 //        var bc : BarChart<String, Number>? = null //объект-диаграмма
         val xAxis = CategoryAxis() //создаем ось ОХ
         val yAxis = NumberAxis() //создаем ось OY
@@ -82,6 +93,7 @@ class DiagramWindow: Initializable {
         bc.title = if (!title.contains(".") && title.startsWith('1')) ((title.toInt() - 1000.0) / 10).toString()+" м" else title// задаем название диаграммы
         xAxis.label = xLabel //задаем общую подпись оси ОХ
         xAxis.categories = FXCollections.observableArrayList(listOf(*xValues))//задаем подписи категорий оси ОХ
+        xAxis.tickLabelRotation = -45.0
         yAxis.label = yLabel //задаем общую подпись оси OY
         val series = ArrayList<XYChart.Series<String, Number>>() //массив серий данных
         dataSeries.forEach {//цикл по названиям серий данных

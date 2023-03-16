@@ -319,9 +319,9 @@ class TempDataWindowControl : Initializable {
 //        if (!daysList2.isDisable && daysList2.checkModel.checkedItems.size == 1) {
         val data = table.items
         var dates = setOf<String?>()  //множество для дат
-        val xValues = arrayOf("0:01:00", "3:01:00", "6:01:00", "9:01:00", "12:01:00", "15:01:00", "18:01:00", "21:01:00")
+        val xValues: Array<String?> = arrayOf("0:01:00", "3:01:00", "6:01:00", "9:01:00", "12:01:00", "15:01:00", "18:01:00", "21:01:00")
 //        val yValues: Map<String, Array<Double>> = mapOf(Pair("0:01:00", arrayOf(-4.19, 5.107, 5.68, 6.0)), Pair("3:01:00", arrayOf(3.18, -4.478, 5.428, 4.0)), Pair("6:01:00", arrayOf(2.485, 3.911, -5.05, 3.0)))
-        var yValues = mutableMapOf<String, Array<Double>>()
+        var yValues = mutableMapOf<String?, Array<Double>>()
         data.forEach {//цикл по данным таблицы
             val dateProp = it["Date"]?.value //дата
             dates=dates.plusElement(dateProp) //добавляем в мн-во
@@ -339,20 +339,49 @@ class TempDataWindowControl : Initializable {
 //        }
         if (dates.size==1) //если выбрана одна дата
             diagramWindowClass.showDiagram(dates.first().toString(), "Times", xValues, "Temperature", "°C", yValues, keys.toTypedArray())
-        else {
-            val months = getMonths(dates)
-            if (months.size==1) {
-                val cal = Calendar.getInstance()
-                cal.set(Calendar.MONTH, months.first().toInt());
-                val monthDate = SimpleDateFormat("MMMM")
-                val monthName = monthDate.format(cal.time)
-                println("month name = $monthName")
-                //todo сделать подсчет средних значений за день для каждой глубины и записывать их в массив, а потом в мап по дням
+        else if (dates.size>1 && daysList2.checkModel.checkedItems.size > 1) { //если несколько дат
+            println("several dates")
+        }
+        else{
+                val months = getMonths(dates)
+                if (months.size==1) { //если выбран 1 месяц
+                    println("1 month")
+                    yValues = mutableMapOf<String?, Array<Double>>()
+                    val cal = Calendar.getInstance()
+                    cal.set(Calendar.MONTH, months.first().toInt()-1);
+                    val monthDate = SimpleDateFormat("MMMM")
+                    val monthName = monthDate.format(cal.time)
+                    println("month name = $monthName")
+// title - Заголовок диаграммы, xLabel - Подпись для оси ОХ, xValues - Значения шкалы по оси ОХ, yLabel - Подпись для оси ОУ, yValues - Значения шкалы по оси ОУ,
+// arraySeriesNames - Названия серий данных
+//                println("dates = $dates")
+                    dates.forEach {date->
+                        val dataFiltered = data.filter{
+                            it["Date"]?.value==date
+                        }
+                        println("for $date ")
+                        var averagesForDay = arrayOf<Double>()
+                        keys.forEach {depth->
+//                        var dataForDepth =  setOf<String, StringProperty>()
+                            var dataForDepth =  arrayOf<Double>()
+                            dataFiltered.forEach {
+                                dataForDepth=dataForDepth.plus(it[depth]?.value!!.replace(',','.').toDouble())
+                            }
+//                        println("for $depth values = ${dataForDepth.toList()}")
+                            println("\tfor $depth average = ${dataForDepth.average()}")
+                            averagesForDay = averagesForDay.plus(dataForDepth.average())
+                        }
+                        yValues[date] = averagesForDay
+                    }
+                    println("yValues = $yValues")
+                    diagramWindowClass.showDiagram(monthName, "Dates", dates.toTypedArray(), "Temperature", "°C", yValues, keys.toTypedArray())
+                } else if (months.size>=1 && monthsList2.checkModel.checkedItems.size > 1){
+                    println("several months")
+                }
             }
         }
 //todo сделать для нескольких дат, для месяца, для нескольких месяцев и т.д.
 
-    }
 
     private fun getMonths(dates: Set<String?>): Set<String> {
         var months = setOf<String>()
@@ -363,35 +392,4 @@ class TempDataWindowControl : Initializable {
         }
         return months
     }
-
-    /*
-    fun fillData(data: ObservableList<Map<String, StringProperty>>) {
-    data.addAll(
-    mutableMapOf(
-    Pair("date", SimpleStringProperty("10/1/2002")),
-    Pair("time", SimpleStringProperty("11:11")),
-    Pair("temp 1", SimpleStringProperty("3,11"))
-    ),
-    mutableMapOf(
-    Pair("date", SimpleStringProperty("11/11/2021")),
-    Pair("time", SimpleStringProperty("12:10")),
-    Pair("temp 1", SimpleStringProperty("4,3"))
-    ),
-    )
-    }
-
-    fun fillData1(data: ObservableList<List<StringProperty>>) {
-    val firstRow = ArrayList<StringProperty>(3)
-    firstRow.add(0, SimpleStringProperty("31/12/2002"))
-    firstRow.add(1, SimpleStringProperty("10:12"))
-    firstRow.add(2, SimpleStringProperty("100"))
-
-    val secondRow = ArrayList<StringProperty>(3)
-    secondRow.add(0, SimpleStringProperty("30/1/2012"))
-    secondRow.add(1, SimpleStringProperty("11:12"))
-    secondRow.add(2, SimpleStringProperty("102"))
-    data.addAll(firstRow, secondRow)
-    }
-    */
-
 }
