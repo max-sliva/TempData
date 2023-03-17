@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane prefHeight="443.0" prefWidth="716.0" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="DiagramWindow">
+<BorderPane prefHeight="443.0" prefWidth="716.0" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="DiagramWindow">
 <!--<BorderPane xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="DiagramWindow">-->
 <!--   <left>-->
 <!--      <VBox fx:id="boxForCheckCombos" prefHeight="400.0" prefWidth="279.0" styleClass="custom-dashed-border-green" visible="false" BorderPane.alignment="CENTER">-->
@@ -21,11 +21,13 @@
    <top>
       <HBox alignment="CENTER" prefHeight="38.0" prefWidth="718.0" spacing="20.0" BorderPane.alignment="CENTER">
          <children>
+            <ColorPicker fx:id="colorPicker" disable="true" onAction="#onColorPick" />
             <RadioButton mnemonicParsing="false" onAction="#inTabsClick" text="in tabs">
                <toggleGroup>
                   <ToggleGroup fx:id="tabs" />
                </toggleGroup></RadioButton>
             <RadioButton mnemonicParsing="false" onAction="#allInOneClick" selected="true" text="all in one" toggleGroup="$tabs" />
+            <ComboBox fx:id="chartsComboBox" onAction="#onChooseChart" prefWidth="150.0" promptText="Charts" />
             <Button fx:id="saveToImageButton" mnemonicParsing="false" onAction="#saveToImage" text="Save to image" />
          </children>
       </HBox>
