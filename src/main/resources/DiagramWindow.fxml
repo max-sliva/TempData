@@ -26,7 +26,11 @@
                   <ToggleGroup fx:id="tabs" />
                </toggleGroup></RadioButton>
             <RadioButton mnemonicParsing="false" onAction="#allInOneClick" selected="true" text="all in one" toggleGroup="$tabs" />
+            <Button fx:id="saveToImageButton" mnemonicParsing="false" onAction="#saveToImage" text="Save to image" />
          </children>
       </HBox>
    </top>
+   <bottom>
+      <Slider fx:id="opacitySlider" BorderPane.alignment="CENTER" />
+   </bottom>
 </BorderPane>

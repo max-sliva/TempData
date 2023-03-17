@@ -1,23 +1,36 @@
 import javafx.collections.FXCollections
+import javafx.embed.swing.SwingFXUtils
 import javafx.event.ActionEvent
 import javafx.fxml.FXML
 import javafx.fxml.Initializable
 import javafx.scene.Node
+import javafx.scene.SnapshotParameters
 import javafx.scene.chart.BarChart
 import javafx.scene.chart.CategoryAxis
 import javafx.scene.chart.NumberAxis
 import javafx.scene.chart.XYChart
+import javafx.scene.control.Button
+import javafx.scene.control.Slider
 import javafx.scene.control.Tab
 import javafx.scene.control.TabPane
+import javafx.scene.image.WritableImage
 import javafx.scene.layout.AnchorPane
 import javafx.scene.layout.HBox
 import javafx.stage.Stage
 import org.controlsfx.control.CheckComboBox
+import java.io.File
 import java.net.URL
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.text.SimpleDateFormat
 import java.util.*
+import javax.imageio.ImageIO
 
 class DiagramWindow: Initializable {
+
     @FXML
+    lateinit var opacitySlider: Slider
+    lateinit var saveToImageButton: Button
     lateinit var tabPane: TabPane
     lateinit var tabForDiagram: AnchorPane
     lateinit var paneForDiagram: HBox
@@ -30,10 +43,20 @@ class DiagramWindow: Initializable {
     lateinit var daysList2: CheckComboBox<String>
     lateinit var monthsList2: CheckComboBox<String>
     lateinit var seriesNames: Array<String>
-    //todo create class for diagram making - average for day, month, year, several days, months, years,
     override fun initialize(location: URL?, resources: ResourceBundle?) {
         println("Diagram window")
         db = DBwork()
+        opacitySlider.valueProperty().addListener{ _, oldVal, newVal ->
+//            println("slider oldValue = $oldVal")
+//            println("slider newValue = $newVal")
+            (paneForDiagram.scene.window as Stage).opacity = 1 - newVal.toInt() / 100.0
+//            if (isMakingGIF){
+//                if (oldVal.toInt()==100) addImageToArrayList()
+//                if (newVal.toInt() % comboFrameEvery.value ==0) addImageToArrayList()
+////                if (oldVal.toInt()==100) makeImage("png")
+////                if (newVal.toInt()%2==0) makeImage("png")
+//            }
+        }
     }
 
     fun checkBoxPaneAddAll(
@@ -130,7 +153,7 @@ class DiagramWindow: Initializable {
         bc.minWidth = 0.0
         bc.prefWidth = 2000.0 //чтобы диаграмма менялась с изменением окна
         val node = bc.lookup(".data0.chart-bar")
-        println("data0.chart-bar style = ${node.style}")
+//        println("data0.chart-bar style = ${node.style}")
 //        bc.maxHeightProperty().bind(paneForDiagram.maxHeightProperty())
         return bc
     }
@@ -138,12 +161,39 @@ class DiagramWindow: Initializable {
     fun allInOneClick(actionEvent: ActionEvent) {
         paneForDiagram.isVisible = true
         tabPane.isVisible = false
+        saveToImageButton.text = "Save to image"
 //        showDiagram()
     }
 
     fun inTabsClick(actionEvent: ActionEvent) {
         paneForDiagram.isVisible = false
         tabPane.isVisible = true
+        saveToImageButton.text = "Save to images"
+
 //        showDiagram()
+    }
+
+    fun saveToImage(actionEvent: ActionEvent) {
+        val rightNow = Calendar.getInstance()
+        val date = rightNow.time as Date
+        val sdf = SimpleDateFormat("dd_MM_yy HH_mm_ss")
+        val dirPath = sdf.format(date)
+//        val currentPath: String = Paths.get(".").toAbsolutePath().normalize().toString()
+        println("date = ${sdf.format(date)}")
+        Files.createDirectories(Paths.get(dirPath))
+        if (paneForDiagram.isVisible) saveDiagramToImage(paneForDiagram, dirPath, (paneForDiagram.scene.window as Stage).title)
+        if (tabPane.isVisible) {
+            tabPane.tabs.forEach {
+                tabPane.selectionModel.select(it)
+                saveDiagramToImage(it.content, dirPath, it.text)
+//                println("text = ${it.text}")
+            }
+        }
+    }
+
+    private fun saveDiagramToImage(pane: Node, dirPath: String?, title: String?) {
+        val snapshot: WritableImage = pane.snapshot(SnapshotParameters(), null)
+        val file = File("$dirPath/$title.png")
+        ImageIO.write(SwingFXUtils.fromFXImage(snapshot, null),"png", file)
     }
 }
