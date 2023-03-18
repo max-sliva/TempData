@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane prefHeight="443.0" prefWidth="716.0" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="DiagramWindow">
+<BorderPane prefHeight="443.0" prefWidth="716.0" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="DiagramWindow">
 <!--<BorderPane xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="DiagramWindow">-->
 <!--   <left>-->
 <!--      <VBox fx:id="boxForCheckCombos" prefHeight="400.0" prefWidth="279.0" styleClass="custom-dashed-border-green" visible="false" BorderPane.alignment="CENTER">-->
@@ -33,6 +33,11 @@
       </HBox>
    </top>
    <bottom>
-      <Slider fx:id="opacitySlider" BorderPane.alignment="CENTER" />
+      <VBox alignment="CENTER" spacing="10.0" BorderPane.alignment="CENTER">
+         <children>
+            <HBox fx:id="checkBoxesForSeriesPane" alignment="CENTER" spacing="10.0" />
+            <Slider fx:id="opacitySlider" />
+         </children>
+      </VBox>
    </bottom>
 </BorderPane>

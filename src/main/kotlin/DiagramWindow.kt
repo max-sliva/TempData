@@ -1,3 +1,4 @@
+import javafx.application.Platform
 import javafx.collections.FXCollections
 import javafx.embed.swing.SwingFXUtils
 import javafx.event.ActionEvent
@@ -10,8 +11,8 @@ import javafx.scene.control.*
 import javafx.scene.image.WritableImage
 import javafx.scene.layout.AnchorPane
 import javafx.scene.layout.HBox
+import javafx.scene.paint.Color
 import javafx.stage.Stage
-import org.controlsfx.control.CheckComboBox
 import java.awt.Desktop
 import java.io.File
 import java.net.URL
@@ -28,9 +29,10 @@ data class ChartParams(val title: String,
                        val ySuffix: String,
                        val yValues: Map<String?, Array<Double>>,
                        val dataSeries: Array<String>)
+data class SeriesXY(val x: String, val y: Double) //класс для значений серий данных для изменения диаграммы
 class DiagramWindow : Initializable {
-
     @FXML
+    lateinit var checkBoxesForSeriesPane: HBox
     lateinit var chartsComboBox: ComboBox<Any>
     lateinit var colorPicker: ColorPicker
     lateinit var opacitySlider: Slider
@@ -41,6 +43,10 @@ class DiagramWindow : Initializable {
     lateinit var db: DBwork
     lateinit var seriesNames: Array<String>
     lateinit var chartParams: ChartParams
+    val initColor = "008080" //начальный цвет для диаграмм в табах
+    var mapOfDeletedSeries = mapOf<String, Array<SeriesXY>>()
+//    var mapOfDeletedSeriesX = mapOf<String, Array<String>>()
+//    lateinit var bc: XYChart<String, Number>
     override fun initialize(location: URL?, resources: ResourceBundle?) {
         println("Diagram window")
         db = DBwork()
@@ -49,6 +55,9 @@ class DiagramWindow : Initializable {
         }
         chartsComboBox.items.addAll("BarChart", "LineChart")
         chartsComboBox.selectionModel.select(0)
+        val curColor = Color.valueOf("0x${initColor}")
+        println("color = $curColor")
+        colorPicker.value = curColor
     }
 
     /**
@@ -87,17 +96,71 @@ class DiagramWindow : Initializable {
         val window = tabPane.scene.window as Stage
         window.title = title
         seriesNames = arraySeriesNames
-        val bc = createBarChartForDay(title, xLabel, xValues, yLabel, ySuffix, yValues, seriesNames, chartType)
+        var bc = createBarChartForDay(title, xLabel, xValues, yLabel, ySuffix, yValues, seriesNames, chartType)
         chartParams = ChartParams(title, xLabel, xValues, yLabel, ySuffix, yValues, seriesNames)
         paneForDiagram.children.add(bc)
         seriesNames.forEach {
             val tab = Tab(it)
             tabPane.tabs.add(tab)
             val bc = createBarChartForDay(it, xLabel, xValues, yLabel, ySuffix, yValues, arrayOf(it), chartType)
-            for (n in bc.lookupAll(".default-color0.chart-bar")) {
-                n.style = "-fx-bar-fill: #008080;"
-            }
+            if (chartsComboBox.value=="BarChart")
+                for (n in bc.lookupAll(".default-color0.chart-bar")) {
+                    n.style = "-fx-bar-fill: #008080;"
+                }
+            else
+                for (n in bc.lookupAll(".default-color0.chart-series-line")) {
+                    n.style = "-fx-stroke: #008080};"
+                }
+
             tab.contentProperty().set(bc)
+        }
+        checkBoxesForSeriesPane.children.clear()
+        val arrayOfChecksForSeries = arrayOf<CheckBox>() //массив чек-боксов для серий
+        arraySeriesNames.forEach {name-> //цикл по сериям данных
+            arrayOfChecksForSeries.plus(CheckBox(name).apply {  //добавляем новый чек-бокс с текстом серии данных
+                isSelected = true       //ставим галочку
+                checkBoxesForSeriesPane.children.add(this)  //добавляем на панель
+                this.selectedProperty().addListener { _, _, newValue ->  //слушатель нажатия на чек-бокс
+                    println("$name checked is $newValue")
+                    if (newValue==false) { //если сняли флаг
+                        val seriesPart = bc.data.filter {
+                            it.name==name  //фильтруем серии данных
+                        }.first()
+                        println("found in series = ${seriesPart.name}")
+                        println("series value = ${seriesPart.data.toList()}")
+                        var seriesValuesArray = arrayOf<SeriesXY>() //врменный массив для записи данных убираемой серии данных
+                        seriesPart.data.forEach {//цикл по данным убираемой серии
+                            seriesValuesArray = seriesValuesArray.plus(SeriesXY(it.xValue as String, it.yValue as Double)) //добавляем данные во временный массив
+                        }
+                        mapOfDeletedSeries = mapOfDeletedSeries.plus(Pair(name, seriesValuesArray)) //помещаем убираевые данные в мап с именем серии
+//                        println("data for $name from map = ${mapOfDeletedSeries[name]?.toList()}")
+                        println("data for $name from map = ${mapOfDeletedSeries[name]?.toList()}")
+                        Platform.runLater {
+                            bc.data.remove(seriesPart) //убираем эту серию
+                        }
+                        println("data for $name from map2 = ${mapOfDeletedSeries[name]?.toList()}")
+                    }
+                    if (newValue==true) { //если поставили флаг
+                        println("data for $name from map = ${mapOfDeletedSeries[name]?.toList()}")
+                        val seriesCopy = XYChart.Series<String, Number>().apply {//создаем новую серию данных
+                            this.name = name //задаем имя
+                            mapOfDeletedSeries[name]?.forEach { //и данные из мапа
+                                data.add(XYChart.Data(it.x, it.y))
+                            }
+                        }
+                        println("series data from map = ${seriesCopy.data.toList()}")
+                        val i = arraySeriesNames.indexOf(name) //для добавления в нужную позицию на легенде
+                        if (i>=bc.data.size)
+                            bc.data.add(seriesCopy)
+                        else bc.data.add(i, seriesCopy)
+//                        var bcData = bc.data.sorted()
+////                        bc.data.clear()
+//                        bc.data.removeAll(bcData)
+//                        bc.data.addAll(bcData)
+                    }
+//                    println("bc.data = ${bc.data}")
+                }
+            })
         }
         println("Show diagram")
     }
@@ -187,6 +250,7 @@ class DiagramWindow : Initializable {
         tabPane.isVisible = false
         colorPicker.isDisable = true
         saveToImageButton.text = "Save to image"
+        checkBoxesForSeriesPane.isVisible = true
 //        showDiagram()
     }
 
@@ -195,7 +259,7 @@ class DiagramWindow : Initializable {
         tabPane.isVisible = true
         colorPicker.isDisable = false
         saveToImageButton.text = "Save to images"
-
+        checkBoxesForSeriesPane.isVisible = false
 //        showDiagram()
     }
 
@@ -231,11 +295,18 @@ class DiagramWindow : Initializable {
     fun onColorPick(actionEvent: ActionEvent) {
         var colorRGB = colorPicker.value.toString()
         colorRGB = colorRGB.subSequence(2, colorRGB.length).toString()
-        println("color = ${colorRGB}")
+        println("color = $colorRGB")
         val tab = tabPane.selectionModel.selectedItem
         val bc = tab.content
-        for (n in bc.lookupAll(".default-color0.chart-bar")) {
-            n.style = "-fx-bar-fill: #$colorRGB};"
+        if (chartsComboBox.value=="BarChart")
+            for (n in bc.lookupAll(".default-color0.chart-bar")) {
+                n.style = "-fx-bar-fill: #$colorRGB};"
+            }
+        else {
+//            println("in tabs")
+            for (n in bc.lookupAll(".default-color0.chart-series-line")) {
+                n.style = "-fx-stroke: #$colorRGB};"
+            }
         }
 //        println("tab content = ${tab.content}")
     }
