@@ -20,7 +20,7 @@ class TempData: Application() {
 //        val fxmlLoader = FXMLLoader(URL("file:$fxmlPath")) //для jar-файла
         val fxmlLoader = getLoader("tempDataWindow.fxml")
 //        val fxmlLoader = FXMLLoader(this.javaClass.getResource("mainWindow.fxml")) //для запуска из IDE
-        primaryStage.title = "TempData 0.1!"
+        primaryStage.title = "TempData 0.5!"
         val scene = Scene(fxmlLoader.load(), 1200.0, 900.0)
         primaryStage.scene = scene
 

@@ -74,14 +74,14 @@ class DiagramWindow : Initializable {
         title: String = "17.10.2019",
         xLabel: String = "Times",
         xValues: Array<String?> = arrayOf(
-            "0:01:00",
-            "3:01:00",
-            "6:01:00",
-            "9:01:00",
-            "12:01:00",
-            "15:01:00",
-            "18:01:00",
-            "21:01:00"
+            "-0:01:00",
+            "-3:01:00",
+            "-6:01:00",
+            "-9:01:00",
+            "-12:01:00",
+            "-15:01:00",
+            "-18:01:00",
+            "-21:01:00"
         ),
         yLabel: String = "Temperature",
         ySuffix: String = "°C",
@@ -93,6 +93,8 @@ class DiagramWindow : Initializable {
         arraySeriesNames: Array<String> = arrayOf("1000", "1001", "1002", "1004",),
         chartType: String = "BarChart"
     ) {
+        println("data received: xValues = ${xValues.toList()}")
+
         val window = tabPane.scene.window as Stage
         window.title = title
         seriesNames = arraySeriesNames

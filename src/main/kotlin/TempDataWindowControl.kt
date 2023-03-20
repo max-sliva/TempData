@@ -119,8 +119,22 @@ class TempDataWindowControl : Initializable {
         br.readLines().forEach { line ->
 //            println(line)
             if (i >= 2) {
-                val values: Array<String> = line.split(';', ' ').dropLastWhile { it.isEmpty() }.toTypedArray()
-                records.add(values.asList())
+//                val values: Array<String> = line.split(';', ' ').dropLastWhile { it.isEmpty() }.toTypedArray()
+                var values: Array<String> = line.split(';').dropLastWhile { it.isEmpty() }.toTypedArray()
+                val firstValue = values.first()
+                val date = firstValue.split(" ").first()
+                var time = "0"
+                if (firstValue.split(" ").size==1) time = "0:00:00" else time = firstValue.split(" ")[1]
+//                println("firstValue = $firstValue date = $date time = $time")
+//                println("firstValue = $firstValue date = $date")
+                //values.set()
+                values = values.drop(1).toTypedArray()
+                val tempList = ArrayList<String>()
+                tempList.add(date)
+                tempList.add(time)
+                tempList.addAll(values)
+                records.add(tempList)
+                println("tempList = ${tempList}")
             }
             if (flag) i++
             if (line.contains("Серийный номер")) {
@@ -130,6 +144,7 @@ class TempDataWindowControl : Initializable {
 
             if (line.contains("Доп. информация")) {
                 headers = line.split(';').dropLastWhile { it.isEmpty() }.toTypedArray()
+                println("headers = ${headers.asList()}")
                 flag = true
                 i++
             }
@@ -311,6 +326,7 @@ class TempDataWindowControl : Initializable {
         println(keys)
         val data = table.items
         var dates = setOf<String?>()  //множество для дат
+        //todo сделать нормальный парсинг времен из базы
         val xValues: Array<String?> = arrayOf("0:01:00", "3:01:00", "6:01:00", "9:01:00", "12:01:00", "15:01:00", "18:01:00", "21:01:00")
 //        val yValues: Map<String, Array<Double>> = mapOf(Pair("0:01:00", arrayOf(-4.19, 5.107, 5.68, 6.0)), Pair("3:01:00", arrayOf(3.18, -4.478, 5.428, 4.0)), Pair("6:01:00", arrayOf(2.485, 3.911, -5.05, 3.0)))
         var yValues = mutableMapOf<String?, Array<Double>>()
@@ -324,9 +340,18 @@ class TempDataWindowControl : Initializable {
             val time = it["Time"]?.value.toString() //время
             yValues[time] = seriesArray //данные по температурам на разных глубинах для этого времени
         }
-        if (dates.size==1) //если выбрана одна дата
-            diagramWindowClass.showDiagram(dates.first().toString(), "Times", xValues, "Temperature", "°C", yValues, keys.toTypedArray())
-        else if (dates.size>1 && daysList2.checkModel.checkedItems.size > 1) { //если несколько дат
+        if (dates.size==1) {//если выбрана одна дата
+            println("xValues = ${xValues.toList()}")
+            diagramWindowClass.showDiagram(
+                dates.first().toString(),
+                "Times",
+                xValues,
+                "Temperature",
+                "°C",
+                yValues,
+                keys.toTypedArray()
+            )
+        }        else if (dates.size>1 && daysList2.checkModel.checkedItems.size > 1) { //если несколько дат
             println("several dates")
         }
         else{
@@ -383,7 +408,11 @@ class TempDataWindowControl : Initializable {
                         println("yValues = $yValues")
                         diagramWindowClass.showDiagram(yearName, "Months", monthNames, "Temperature", "°C", yValues, keys.toTypedArray())
                     }
+                    //todo вывод значений точек на графике (в табах по умолчанию, в общей по наведению или щелчку)
+                    //todo приближение/уменьшение графика
+                    //todo анализ промерзания по глубинам
                     //todo сделать для нескольких дат, для нескольких месяцев, для нескольких лет
+                    //todo анализ месяца в разных годах
                 }
             }
         }
