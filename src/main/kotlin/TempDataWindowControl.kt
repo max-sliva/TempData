@@ -326,8 +326,9 @@ class TempDataWindowControl : Initializable {
         println(keys)
         val data = table.items
         var dates = setOf<String?>()  //множество для дат
-        //todo сделать нормальный парсинг времен из базы
-        val xValues: Array<String?> = arrayOf("0:01:00", "3:01:00", "6:01:00", "9:01:00", "12:01:00", "15:01:00", "18:01:00", "21:01:00")
+//        val xValues: Array<String?> = arrayOf("0:01:00", "3:01:00", "6:01:00", "9:01:00", "12:01:00", "15:01:00", "18:01:00", "21:01:00")
+        val xValues: Array<String?> = getTimesFromData(data)
+//        println("xValues = ${xValues.asList()}")
 //        val yValues: Map<String, Array<Double>> = mapOf(Pair("0:01:00", arrayOf(-4.19, 5.107, 5.68, 6.0)), Pair("3:01:00", arrayOf(3.18, -4.478, 5.428, 4.0)), Pair("6:01:00", arrayOf(2.485, 3.911, -5.05, 3.0)))
         var yValues = mutableMapOf<String?, Array<Double>>()
         data.forEach {//цикл по данным таблицы
@@ -408,7 +409,7 @@ class TempDataWindowControl : Initializable {
                         println("yValues = $yValues")
                         diagramWindowClass.showDiagram(yearName, "Months", monthNames, "Temperature", "°C", yValues, keys.toTypedArray())
                     }
-                    //todo вывод значений точек на графике (в табах по умолчанию, в общей по наведению или щелчку)
+                    //todo значение глубины неправильно показывает из-за разных данных: 1001 или 1010
                     //todo приближение/уменьшение графика
                     //todo анализ промерзания по глубинам
                     //todo сделать для нескольких дат, для нескольких месяцев, для нескольких лет
@@ -416,6 +417,16 @@ class TempDataWindowControl : Initializable {
                 }
             }
         }
+
+    private fun getTimesFromData(data: ObservableList<Map<String, StringProperty>>?): Array<String?> {
+        var times =  setOf<String?>()
+        data?.forEach {//цикл по данным таблицы
+            val timeProp = it["Time"]?.value
+            times = times.plus(timeProp)
+        }
+        return times.toTypedArray()
+    }
+
     private fun getAveragesArray(keys: List<String>, dataFiltered: List<Map<String, StringProperty>>): Array<Double> {
         var averages = arrayOf<Double>() //массив для средних по каждой дате
         keys.forEach {depth->   //цикл по глубинам

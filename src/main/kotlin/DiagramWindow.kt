@@ -1,17 +1,28 @@
 import javafx.application.Platform
+import javafx.beans.binding.ObjectExpression
+import javafx.beans.value.ChangeListener
+import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.embed.swing.SwingFXUtils
 import javafx.event.ActionEvent
+import javafx.event.EventHandler
 import javafx.fxml.FXML
 import javafx.fxml.Initializable
+import javafx.geometry.Bounds
+import javafx.scene.Group
 import javafx.scene.Node
+import javafx.scene.Parent
 import javafx.scene.SnapshotParameters
 import javafx.scene.chart.*
 import javafx.scene.control.*
 import javafx.scene.image.WritableImage
+import javafx.scene.input.MouseEvent
 import javafx.scene.layout.AnchorPane
 import javafx.scene.layout.HBox
+import javafx.scene.layout.Pane
 import javafx.scene.paint.Color
+import javafx.scene.shape.Circle
+import javafx.scene.text.Text
 import javafx.stage.Stage
 import java.awt.Desktop
 import java.io.File
@@ -21,6 +32,8 @@ import java.nio.file.Paths
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.imageio.ImageIO
+import kotlin.math.roundToInt
+
 
 data class ChartParams(val title: String,
                        val xLabel: String,
@@ -43,6 +56,7 @@ class DiagramWindow : Initializable {
     lateinit var db: DBwork
     lateinit var seriesNames: Array<String>
     lateinit var chartParams: ChartParams
+    var divValue = 10 //значение, на которое делим значение глубины, чтобы получить нормальное в метрах
     val initColor = "008080" //начальный цвет для диаграмм в табах
     var mapOfDeletedSeries = mapOf<String, Array<SeriesXY>>()
 //    var mapOfDeletedSeriesX = mapOf<String, Array<String>>()
@@ -90,13 +104,13 @@ class DiagramWindow : Initializable {
             Pair("3:01:00", arrayOf(3.18, -4.478, 5.428, 4.0)),
             Pair("6:01:00", arrayOf(2.485, 3.911, -5.05, 3.0))
         ),
-        arraySeriesNames: Array<String> = arrayOf("1000", "1001", "1002", "1004",),
+        arraySeriesNames: Array<String> = arrayOf("1000", "1001", "1002", "1004"),
         chartType: String = "BarChart"
     ) {
-        println("data received: xValues = ${xValues.toList()}")
-
+//        println("data received: xValues = ${xValues.toList()}")
         val window = tabPane.scene.window as Stage
         window.title = title
+        if (arraySeriesNames[1]=="1010") divValue = 100 //если второе значение глубины 1010, то делить будем на 100
         seriesNames = arraySeriesNames
         var bc = createBarChartForDay(title, xLabel, xValues, yLabel, ySuffix, yValues, seriesNames, chartType)
         chartParams = ChartParams(title, xLabel, xValues, yLabel, ySuffix, yValues, seriesNames)
@@ -197,7 +211,7 @@ class DiagramWindow : Initializable {
         var bc = if (chartType=="BarChart") BarChart<String, Number>(xAxis, yAxis) //создаем столбчатую диаграмму с осями xAxis и yAxis
                  else LineChart<String, Number>(xAxis, yAxis) //создаем линейную диаграмму с осями xAxis и yAxis
         bc.title =
-            if (!title.contains(".") && title.startsWith('1')) ((title.toInt() - 1000.0) / 10).toString() + " м" else title// задаем название диаграммы
+            if (!title.contains(".") && title.startsWith('1')) ((title.toInt() - 1000.0) / divValue).toString() + " м" else title// задаем название диаграммы
         xAxis.label = xLabel //задаем общую подпись оси ОХ
         xAxis.categories = FXCollections.observableArrayList(listOf(*xValues))//задаем подписи категорий оси ОХ
         xAxis.tickLabelRotation = -45.0
@@ -229,6 +243,21 @@ class DiagramWindow : Initializable {
                             yArray!![k]
                         )
                     ) //и берем для нее значение в массиве значений температур
+                    if (bc is LineChart){
+                        series[0].data.forEach { dataPart ->
+                            dataPart.node = createDataNode(dataPart.YValueProperty())
+                        }
+                //todo найти как выводить значение точек на графике для бар чарта
+                    } else {
+                        series[0].data.forEach { dataPart ->
+                            displayLabelForData(dataPart)
+//                            val i = series[0].data.indexOf(dataPart)
+//                            dataPart.node = HoveredThresholdNode(
+//                                if (i == 0) 0 else series[0].data[i-1].YValueProperty() as Int,
+//                                dataPart.YValueProperty() as Int
+//                            )
+                        }
+                    }
 //                    }
                 } catch (e: NullPointerException) { //если данных меньше чем значений в xValues
                     return@forEach //выходим из forEach
@@ -239,12 +268,38 @@ class DiagramWindow : Initializable {
             bc.isLegendVisible = false
         }
         bc.data.addAll(series) //добавляем созданные наборы в диаграмму
+        series.forEach {   //для добавления всплывающего сообщения при наведении на точку графика или линию барчарта
+            for (entry in it.data) { //проходим по данным
+//                println("Entered!")
+                val s = entry.yValue.toString() //берем значение
+                val t = Tooltip(if (s.length>=6) s.substring(0..5) else s) //и сокращаем его, если оно длинне 6 символов
+                Tooltip.install(entry.node, t) //добавляем тултип к объекту
+//                val node = entry.node
+                entry.node.onMouseEntered = EventHandler<MouseEvent?>() {event->  //для сокращения задержки вывода сообщения
+                 // +15 moves the tooltip 15 pixels below the mouse cursor;
+                 // if you don't change the y coordinate of the tooltip, you will see constant screen flicker
+                    t.show(entry.node, event.screenX, event.screenY + 15)
+                }
+                entry.node.onMouseExited = EventHandler { t.hide() }
+            }
+        }
+
         bc.minWidth = 0.0
         bc.prefWidth = 2000.0 //чтобы диаграмма менялась с изменением окна
         val node = bc.lookup(".data0.chart-bar")
 //        println("data0.chart-bar style = ${node.style}")
 //        bc.maxHeightProperty().bind(paneForDiagram.maxHeightProperty())
         return bc
+    }
+
+    private fun createDataNode(value: ObjectExpression<Number>): Node? {
+        val label = Label()
+        label.textProperty().bind(value.asString("%,.2f"))
+        val pane = Pane(label)
+        pane.shape = Circle(6.0)
+        pane.isScaleShape = false
+        label.translateYProperty().bind(label.heightProperty().divide(-1.5))
+        return pane
     }
 
     fun allInOneClick(actionEvent: ActionEvent) {
@@ -320,4 +375,24 @@ class DiagramWindow : Initializable {
                     chartParams.yValues, chartParams.dataSeries, chartsComboBox.value.toString())
         println("chart = ${chartsComboBox.value}")
     }
+
+    private fun displayLabelForData(data: XYChart.Data<String, Number>) { //todo разобраться, почему не работает
+        val node = data.node
+        val dataText = Text(data.yValue.toString() + "!")
+        println("!dataText = ${dataText.text}")
+        println("node here")
+        println("node parent = ${node.parent}")
+//        node.parentProperty().addListener { observable, oldValue, parent ->
+//            val parentGroup: Group = parent as Group
+//            parentGroup.children.add(dataText)
+//        }
+
+        node.boundsInParentProperty().addListener { ov, oldBounds, bounds ->
+            dataText.layoutX = (bounds!!.minX + bounds!!.width / 2 - dataText.prefWidth(-1.0) / 2).roundToInt().toDouble()
+            dataText.layoutY = (bounds.minY - dataText.prefHeight(-1.0) * 0.5).roundToInt().toDouble()
+        }
+        dataText.toFront()
+    }
+
 }
+
