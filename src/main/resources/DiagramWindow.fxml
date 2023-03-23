@@ -40,4 +40,7 @@
          </children>
       </VBox>
    </bottom>
+   <left>
+      <Slider fx:id="zoomSlider" orientation="VERTICAL" BorderPane.alignment="CENTER" />
+   </left>
 </BorderPane>

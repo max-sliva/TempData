@@ -1,17 +1,13 @@
 import javafx.application.Platform
 import javafx.beans.binding.ObjectExpression
-import javafx.beans.value.ChangeListener
-import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.embed.swing.SwingFXUtils
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.fxml.FXML
 import javafx.fxml.Initializable
-import javafx.geometry.Bounds
 import javafx.scene.Group
 import javafx.scene.Node
-import javafx.scene.Parent
 import javafx.scene.SnapshotParameters
 import javafx.scene.chart.*
 import javafx.scene.control.*
@@ -44,7 +40,9 @@ data class ChartParams(val title: String,
                        val dataSeries: Array<String>)
 data class SeriesXY(val x: String, val y: Double) //класс для значений серий данных для изменения диаграммы
 class DiagramWindow : Initializable {
+
     @FXML
+    lateinit var zoomSlider: Slider
     lateinit var checkBoxesForSeriesPane: HBox
     lateinit var chartsComboBox: ComboBox<Any>
     lateinit var colorPicker: ColorPicker
@@ -64,8 +62,26 @@ class DiagramWindow : Initializable {
     override fun initialize(location: URL?, resources: ResourceBundle?) {
         println("Diagram window")
         db = DBwork()
-        opacitySlider.valueProperty().addListener { _, oldVal, newVal ->
+        opacitySlider.valueProperty().addListener { _, oldVal, newVal -> //прозрачность окна
             (paneForDiagram.scene.window as Stage).opacity = 1 - newVal.toInt() / 100.0
+        }
+        zoomSlider.valueProperty().addListener { _, oldVal, newVal ->  //увеличение диаграммы
+            if (paneForDiagram.isVisible){  //todo подобрать параметры зума
+                if (oldVal.toDouble() < newVal.toDouble()) {
+//                    paneForDiagram.scaleX = paneForDiagram.scaleX + newVal.toDouble()/10
+                    paneForDiagram.scaleX+=0.1
+//                    paneForDiagram.scaleY = paneForDiagram.scaleY + newVal.toDouble()/10
+                    paneForDiagram.scaleY+=0.1
+                } else{
+//                    paneForDiagram.scaleX = paneForDiagram.scaleX - newVal.toDouble()/10
+//                    paneForDiagram.scaleY = paneForDiagram.scaleY - newVal.toDouble()/10
+                    paneForDiagram.scaleX-=0.1
+                    paneForDiagram.scaleY-=0.1
+
+                }
+
+            }
+
         }
         chartsComboBox.items.addAll("BarChart", "LineChart")
         chartsComboBox.selectionModel.select(0)
@@ -247,16 +263,16 @@ class DiagramWindow : Initializable {
                         series[0].data.forEach { dataPart ->
                             dataPart.node = createDataNode(dataPart.YValueProperty())
                         }
-                //todo найти как выводить значение точек на графике для бар чарта
                     } else {
-                        series[0].data.forEach { dataPart ->
-                            displayLabelForData(dataPart)
-//                            val i = series[0].data.indexOf(dataPart)
-//                            dataPart.node = HoveredThresholdNode(
-//                                if (i == 0) 0 else series[0].data[i-1].YValueProperty() as Int,
-//                                dataPart.YValueProperty() as Int
-//                            )
-                        }
+//                        series[0].data.forEach { dataPart ->
+////                            dataPart.node = createDataNode(dataPart.YValueProperty())
+//                            displayLabelForData(dataPart)
+////                            val i = series[0].data.indexOf(dataPart)
+////                            dataPart.node = HoveredThresholdNode(
+////                                if (i == 0) 0 else series[0].data[i-1].YValueProperty() as Int,
+////                                dataPart.YValueProperty() as Int
+////                            )
+//                        }
                     }
 //                    }
                 } catch (e: NullPointerException) { //если данных меньше чем значений в xValues
@@ -281,6 +297,30 @@ class DiagramWindow : Initializable {
                     t.show(entry.node, event.screenX, event.screenY + 15)
                 }
                 entry.node.onMouseExited = EventHandler { t.hide() }
+            }
+            if (series.size==1){
+                if (bc is BarChart){
+                    series[0].data.forEach { dataPart ->
+//                            dataPart.node = createDataNode(dataPart.YValueProperty())
+//                        node.parentProperty().addListener { observable, oldValue, parent ->
+//                            val parentGroup: Group = parent as Group
+//                            parentGroup.children.add(dataText)
+//                        }
+                        dataPart.node.setOnMousePressed { event: MouseEvent? -> //todo добавить лейбл с текстом значения бара, выводить по координатам щелчка мыши
+                            println("value = ${dataPart.yValue}")
+                        }
+//                        setNodeStyle(dataPart)
+//                        displayLabelForData(dataPart)
+//                        dataPart.nodeProperty().addListener { ov, oldNode, node ->
+//                            println("node in dataPart.nodeProperty() = $node")
+//                            if (node != null) {
+//                              println("in dataPart.nodeProperty()")
+//                                setNodeStyle(dataPart)
+//                                displayLabelForData(dataPart)
+//                            }
+//                        }
+                    }
+                }
             }
         }
 
@@ -376,23 +416,32 @@ class DiagramWindow : Initializable {
         println("chart = ${chartsComboBox.value}")
     }
 
-    private fun displayLabelForData(data: XYChart.Data<String, Number>) { //todo разобраться, почему не работает
+    private fun displayLabelForData(data: XYChart.Data<String, Number>) {
         val node = data.node
         val dataText = Text(data.yValue.toString() + "!")
         println("!dataText = ${dataText.text}")
-        println("node here")
+        println("node = $node")
         println("node parent = ${node.parent}")
-//        node.parentProperty().addListener { observable, oldValue, parent ->
-//            val parentGroup: Group = parent as Group
-//            parentGroup.children.add(dataText)
-//        }
+        node.parentProperty().addListener { observable, oldValue, parent ->
+            val parentGroup: Group = parent as Group
+            parentGroup.children.add(dataText)
+        }
 
         node.boundsInParentProperty().addListener { ov, oldBounds, bounds ->
-            dataText.layoutX = (bounds!!.minX + bounds!!.width / 2 - dataText.prefWidth(-1.0) / 2).roundToInt().toDouble()
+            dataText.layoutX = (bounds!!.minX + bounds.width / 2 - dataText.prefWidth(-1.0) / 2).roundToInt().toDouble()
             dataText.layoutY = (bounds.minY - dataText.prefHeight(-1.0) * 0.5).roundToInt().toDouble()
         }
-        dataText.toFront()
+//        dataText.toFront()
     }
-
+    private fun setNodeStyle(data: XYChart.Data<String, Number>) {
+        val node = data.node
+        if (data.yValue.toInt() > 8) {
+            node.style = "-fx-bar-fill: -fx-exceeded;"
+        } else if (data.yValue.toInt() > 5) {
+            node.style = "-fx-bar-fill: -fx-achieved;"
+        } else {
+            node.style = "-fx-bar-fill: -fx-not-achieved;"
+        }
+    }
 }
 

@@ -410,7 +410,6 @@ class TempDataWindowControl : Initializable {
                         diagramWindowClass.showDiagram(yearName, "Months", monthNames, "Temperature", "°C", yValues, keys.toTypedArray())
                     }
                     //todo значение глубины неправильно показывает из-за разных данных: 1001 или 1010
-                    //todo приближение/уменьшение графика
                     //todo анализ промерзания по глубинам
                     //todo сделать для нескольких дат, для нескольких месяцев, для нескольких лет
                     //todo анализ месяца в разных годах
