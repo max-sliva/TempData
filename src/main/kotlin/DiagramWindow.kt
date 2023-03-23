@@ -84,7 +84,7 @@ class DiagramWindow : Initializable {
 
         }
         chartsComboBox.items.addAll("BarChart", "LineChart")
-        chartsComboBox.selectionModel.select(0)
+        chartsComboBox.selectionModel.select(1)
         val curColor = Color.valueOf("0x${initColor}")
         println("color = $curColor")
         colorPicker.value = curColor
@@ -121,7 +121,7 @@ class DiagramWindow : Initializable {
             Pair("6:01:00", arrayOf(2.485, 3.911, -5.05, 3.0))
         ),
         arraySeriesNames: Array<String> = arrayOf("1000", "1001", "1002", "1004"),
-        chartType: String = "BarChart"
+        chartType: String = "LineChart"
     ) {
 //        println("data received: xValues = ${xValues.toList()}")
         val window = tabPane.scene.window as Stage
