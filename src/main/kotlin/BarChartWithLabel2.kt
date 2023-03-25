@@ -17,6 +17,7 @@ import javafx.scene.shape.Ellipse
 import javafx.scene.shape.Shape
 import javafx.scene.text.Text
 import javafx.stage.Stage
+import kotlin.math.roundToInt
 
 /**
  * Displays a bar with a single series whose bars are different colors depending upon the bar value.
@@ -36,7 +37,7 @@ class BarChartWithLabel2 : Application() {
             val data: XYChart.Data<String?, Number?> = XYChart.Data("Value $i", i)
             data.nodeProperty().addListener { ov, oldNode, node ->
                 if (node != null) {
-                    setNodeStyle(data)
+//                    setNodeStyle(data)
                     displayLabelForData(data)
                 }
             }
@@ -48,7 +49,7 @@ class BarChartWithLabel2 : Application() {
         val chartWithLegend = VBox()
         chartWithLegend.children.setAll(bc, legend)
         VBox.setVgrow(bc, Priority.ALWAYS)
-        chartWithLegend.stylesheets.add(javaClass.getResource("colored-chart.css").toExternalForm())
+       // chartWithLegend.stylesheets.add(javaClass.getResource("colored-chart.css").toExternalForm())
         stage.scene = Scene(chartWithLegend)
         stage.minHeight = 400.0
         stage.minWidth = 400.0
@@ -57,14 +58,14 @@ class BarChartWithLabel2 : Application() {
 
     /** Change color of bar if value of i is <5 then red, if >5 then green if i>8 then blue  */
     private fun setNodeStyle(data: XYChart.Data<String?, Number?>) {
-        val node = data.node
-        if (data.yValue!!.toInt() > 8) {
-            node.style = "-fx-bar-fill: -fx-exceeded;"
-        } else if (data.yValue!!.toInt() > 5) {
-            node.style = "-fx-bar-fill: -fx-achieved;"
-        } else {
-            node.style = "-fx-bar-fill: -fx-not-achieved;"
-        }
+//        val node = data.node
+//        if (data.yValue!!.toInt() > 8) {
+//            node.style = "-fx-bar-fill: -fx-exceeded;"
+//        } else if (data.yValue!!.toInt() > 5) {
+//            node.style = "-fx-bar-fill: -fx-achieved;"
+//        } else {
+//            node.style = "-fx-bar-fill: -fx-not-achieved;"
+//        }
     }
 
     /** places a text label with a bar's value above a bar node for a given XYChart.Data  */
@@ -76,15 +77,10 @@ class BarChartWithLabel2 : Application() {
             parentGroup.children.add(dataText)
         }
         node.boundsInParentProperty().addListener { ov, oldBounds, bounds ->
-            dataText.layoutX = Math.round(
-                bounds.minX + bounds.width / 2 - dataText.prefWidth(-1.0) / 2
-            )
-                .toDouble()
-            dataText.layoutY = Math.round(
-                bounds.minY - dataText.prefHeight(-1.0) * 0.5
-            )
-                .toDouble()
+            dataText.layoutX = (bounds!!.minX + bounds.width / 2 - dataText.prefWidth(-1.0) / 2).roundToInt().toDouble()
+            dataText.layoutY = (bounds.minY - dataText.prefHeight(-1.0) * 0.5).roundToInt().toDouble()
         }
+
     }
 
     /** A simple custom legend for a three valued chart.  */

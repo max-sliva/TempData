@@ -301,18 +301,10 @@ class TempDataWindowControl : Initializable {
         }
     }
 
+    fun onFreezingAnalysisLaunch(actionEvent: ActionEvent) { //todo анализ промерзания по глубинам
+        println("freezing in depth: ")
 
-    fun openDiagramWindow(actionEvent: ActionEvent) {
-//        val fxmlPath = "${getCurrentPath()}/DiagramWindow.fxml"
-//        val fxmlLoader = FXMLLoader(URL("file:$fxmlPath")) //для jar-файла
-//        val fxmlLoader = FXMLLoader(this.javaClass.getResource("ferreFrame.fxml")) //для запуска из IDE
-//        val fxmlLoader = getLoader("DiagramWindow.fxml")
-//        val stage = Stage() //создаем новое окно
-//        stage.scene = Scene(fxmlLoader.load()) //загружаем в него данные
-//        val diagramWindowClass = fxmlLoader.getController<DiagramWindow>()
-//        stage.initModality(Modality.WINDOW_MODAL) //делаем окно модальным
-//        stage.initOwner(mainPane.scene.window) //и его владельцем делаем главное окно
-//        stage.show()
+
     }
 
     fun createDiagram(actionEvent: ActionEvent) {
@@ -410,7 +402,7 @@ class TempDataWindowControl : Initializable {
                         diagramWindowClass.showDiagram(yearName, "Months", monthNames, "Temperature", "°C", yValues, keys.toTypedArray())
                     }
                     //todo значение глубины неправильно показывает из-за разных данных: 1001 или 1010
-                    //todo анализ промерзания по глубинам
+                    //todo сделать сохранение текущих данных из таблицы в excel
                     //todo сделать для нескольких дат, для нескольких месяцев, для нескольких лет
                     //todo анализ месяца в разных годах
                 }
@@ -433,8 +425,12 @@ class TempDataWindowControl : Initializable {
             dataFiltered.forEach { //цикл по отфильтрованным данным
                 dataForDepth=dataForDepth.plus(it[depth]?.value!!.replace(',','.').toDouble())
             }
-//                        println("for $depth values = ${dataForDepth.toList()}")
-            println("\tfor $depth average = ${dataForDepth.average()}")
+//            println("for $depth values = ${dataForDepth.toList()}")
+//            println("\tfor $depth average = ${dataForDepth.average()}")
+//            val s =String.format("%.4f", dataForDepth.sum() / dataForDepth.size)
+            val s2 =String.format("%.4f", dataForDepth.average())
+//            println("\tfor $depth sum = ${dataForDepth.sum()}")
+            println("\tfor $depth average = $s2")
             averages = averages.plus(dataForDepth.average())
         }
         return averages

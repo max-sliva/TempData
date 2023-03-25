@@ -253,28 +253,21 @@ class DiagramWindow : Initializable {
                     val k = seriesNames.indexOf(title) //находим в массиве глубин номер текущей
 //                        println("$k")
 //                        series[0].data.add(XYChart.Data(it, yArray[title.toInt() - 1000]))
-                    series[0].data.add(
-                        XYChart.Data(
-                            it,
-                            yArray!![k]
-                        )
-                    ) //и берем для нее значение в массиве значений температур
-                    if (bc is LineChart){
+                    val data = XYChart.Data<String, Number>(it,yArray!![k])
+                    if (bc is BarChart){  //для вывода значения температуры в бар чарте
+                        data.nodeProperty().addListener { ov, oldNode, node ->
+                            if (node != null) {
+//                    setNodeStyle(data)
+                                displayLabelForData(data)
+                            }
+                        }
+                    }
+                    series[0].data.add(data) //и берем для нее значение в массиве значений температур
+                    if (bc is LineChart){ //для вывода значения температуры в лайн чарте
                         series[0].data.forEach { dataPart ->
                             dataPart.node = createDataNode(dataPart.YValueProperty())
                         }
-                    } else {
-//                        series[0].data.forEach { dataPart ->
-////                            dataPart.node = createDataNode(dataPart.YValueProperty())
-//                            displayLabelForData(dataPart)
-////                            val i = series[0].data.indexOf(dataPart)
-////                            dataPart.node = HoveredThresholdNode(
-////                                if (i == 0) 0 else series[0].data[i-1].YValueProperty() as Int,
-////                                dataPart.YValueProperty() as Int
-////                            )
-//                        }
                     }
-//                    }
                 } catch (e: NullPointerException) { //если данных меньше чем значений в xValues
                     return@forEach //выходим из forEach
                 }
@@ -287,7 +280,9 @@ class DiagramWindow : Initializable {
         series.forEach {   //для добавления всплывающего сообщения при наведении на точку графика или линию барчарта
             for (entry in it.data) { //проходим по данным
 //                println("Entered!")
-                val s = entry.yValue.toString() //берем значение
+//                String.format("%.4f", entry.yValue)
+//                val s = entry.yValue.toString() //берем значение
+                val s = String.format("%.4f", entry.yValue) //берем значение
                 val t = Tooltip(if (s.length>=6) s.substring(0..5) else s) //и сокращаем его, если оно длинне 6 символов
                 Tooltip.install(entry.node, t) //добавляем тултип к объекту
 //                val node = entry.node
@@ -297,30 +292,6 @@ class DiagramWindow : Initializable {
                     t.show(entry.node, event.screenX, event.screenY + 15)
                 }
                 entry.node.onMouseExited = EventHandler { t.hide() }
-            }
-            if (series.size==1){
-                if (bc is BarChart){
-                    series[0].data.forEach { dataPart ->
-//                            dataPart.node = createDataNode(dataPart.YValueProperty())
-//                        node.parentProperty().addListener { observable, oldValue, parent ->
-//                            val parentGroup: Group = parent as Group
-//                            parentGroup.children.add(dataText)
-//                        }
-                        dataPart.node.setOnMousePressed { event: MouseEvent? -> //todo добавить лейбл с текстом значения бара, выводить по координатам щелчка мыши
-                            println("value = ${dataPart.yValue}")
-                        }
-//                        setNodeStyle(dataPart)
-//                        displayLabelForData(dataPart)
-//                        dataPart.nodeProperty().addListener { ov, oldNode, node ->
-//                            println("node in dataPart.nodeProperty() = $node")
-//                            if (node != null) {
-//                              println("in dataPart.nodeProperty()")
-//                                setNodeStyle(dataPart)
-//                                displayLabelForData(dataPart)
-//                            }
-//                        }
-                    }
-                }
             }
         }
 
@@ -410,28 +381,34 @@ class DiagramWindow : Initializable {
 
     fun onChooseChart(actionEvent: ActionEvent) {
         paneForDiagram.children.clear()
+        val curTab = tabPane.selectionModel.selectedItem
+        val tabNumber = tabPane.tabs.indexOf(curTab)
+        println("curTab number = $tabNumber")
         tabPane.tabs.clear()
         showDiagram(chartParams.title, chartParams.xLabel, chartParams.xValues, chartParams.yLabel, chartParams.ySuffix,
                     chartParams.yValues, chartParams.dataSeries, chartsComboBox.value.toString())
         println("chart = ${chartsComboBox.value}")
+        tabPane.selectionModel.select(tabNumber)
     }
 
     private fun displayLabelForData(data: XYChart.Data<String, Number>) {
         val node = data.node
-        val dataText = Text(data.yValue.toString() + "!")
-        println("!dataText = ${dataText.text}")
-        println("node = $node")
-        println("node parent = ${node.parent}")
+//        var s = data.yValue.toString()
+        var s = String.format("%.4f", data.yValue)
+        val dataText = Text(if (s.length>=6) s.substring(0..5) else s)
+//        println("!dataText = ${dataText.text}")
+//        println("node = $node")
+//        println("node parent = ${node.parent}")
         node.parentProperty().addListener { observable, oldValue, parent ->
             val parentGroup: Group = parent as Group
             parentGroup.children.add(dataText)
         }
-
+//todo придумать, как показывать надписи, если выходят за пределы графика
         node.boundsInParentProperty().addListener { ov, oldBounds, bounds ->
             dataText.layoutX = (bounds!!.minX + bounds.width / 2 - dataText.prefWidth(-1.0) / 2).roundToInt().toDouble()
             dataText.layoutY = (bounds.minY - dataText.prefHeight(-1.0) * 0.5).roundToInt().toDouble()
         }
-//        dataText.toFront()
+        dataText.toFront()
     }
     private fun setNodeStyle(data: XYChart.Data<String, Number>) {
         val node = data.node

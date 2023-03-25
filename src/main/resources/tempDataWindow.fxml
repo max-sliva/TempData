@@ -19,7 +19,7 @@
                       </Menu>
                       <Menu mnemonicParsing="false" text="Edit">
                         <items>
-                          <MenuItem fx:id="diagramWindowShow" disable="true" mnemonicParsing="false" onAction="#openDiagramWindow" text="Diagram Window" />
+                          <MenuItem fx:id="freezingAnalysisLaunch" disable="true" mnemonicParsing="false" onAction="#onFreezingAnalysisLaunch" text="Freezing analysis" />
                         </items>
                       </Menu>
                       <Menu mnemonicParsing="false" text="Help">
