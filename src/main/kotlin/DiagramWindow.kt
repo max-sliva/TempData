@@ -164,7 +164,7 @@ class DiagramWindow : Initializable {
                         seriesPart.data.forEach {//цикл по данным убираемой серии
                             seriesValuesArray = seriesValuesArray.plus(SeriesXY(it.xValue as String, it.yValue as Double)) //добавляем данные во временный массив
                         }
-                        mapOfDeletedSeries = mapOfDeletedSeries.plus(Pair(name, seriesValuesArray)) //помещаем убираевые данные в мап с именем серии
+                        mapOfDeletedSeries = mapOfDeletedSeries.plus(Pair(name, seriesValuesArray)) //помещаем убираемые данные в мап с именем серии
 //                        println("data for $name from map = ${mapOfDeletedSeries[name]?.toList()}")
                         println("data for $name from map = ${mapOfDeletedSeries[name]?.toList()}")
                         Platform.runLater {
@@ -399,7 +399,7 @@ class DiagramWindow : Initializable {
 //        println("!dataText = ${dataText.text}")
 //        println("node = $node")
 //        println("node parent = ${node.parent}")
-        node.parentProperty().addListener { observable, oldValue, parent ->
+        node.parentProperty().addListener { _, _, parent ->
             val parentGroup: Group = parent as Group
             parentGroup.children.add(dataText)
         }
@@ -407,6 +407,10 @@ class DiagramWindow : Initializable {
         node.boundsInParentProperty().addListener { ov, oldBounds, bounds ->
             dataText.layoutX = (bounds!!.minX + bounds.width / 2 - dataText.prefWidth(-1.0) / 2).roundToInt().toDouble()
             dataText.layoutY = (bounds.minY - dataText.prefHeight(-1.0) * 0.5).roundToInt().toDouble()
+          //  if (data.yValue.toFloat() < 0) { //если значение отрицательное, то опускаем его ниже
+                dataText.layoutY+=50   //опускаем надпись ниже
+           // dataText.fill = Color.WHITE  //todo сделать жирным текст
+            //}
         }
         dataText.toFront()
     }

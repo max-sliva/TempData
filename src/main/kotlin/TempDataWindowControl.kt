@@ -20,11 +20,13 @@ import java.nio.file.Paths
 import java.text.SimpleDateFormat
 import java.util.*
 
+data class FreezingData(var date: String = "", var time: String = "", var curMinusDepth: Int = 0, var temperature: Float = 1f)
 
 class TempDataWindowControl : Initializable {
 
+    lateinit var freezingAnalysisLaunch: MenuItem
     lateinit var diagramBtn: Button
-    lateinit var diagramWindowShow: MenuItem
+//    lateinit var diagramWindowShow: MenuItem
     lateinit var textLabel: Label
 
     @FXML
@@ -155,7 +157,7 @@ class TempDataWindowControl : Initializable {
     fun showData(actionEvent: ActionEvent) {
         val task = createTask(::dataWork)
         Thread(task).start()
-//        diagramWindowShow.isDisable = false
+        freezingAnalysisLaunch.isDisable = false
         diagramBtn.isDisable = false
     }
 
@@ -303,7 +305,22 @@ class TempDataWindowControl : Initializable {
 
     fun onFreezingAnalysisLaunch(actionEvent: ActionEvent) { //todo анализ промерзания по глубинам
         println("freezing in depth: ")
-
+        val data = table.items
+        data.forEach {
+//            var curMinusDepth = 0
+            val freezingData = FreezingData()
+            keys.forEach {depth->
+                val depthTemperature = it[depth]?.value!!.replace(',','.').toFloat()
+                if ( depthTemperature!! < 0 && depth.toInt()>freezingData.curMinusDepth) {
+//                    println("< 0: $depthVal on $depth ${it["Date"]?.value} ${it["Time"]?.value} ")
+                    freezingData.curMinusDepth = depth.toInt()
+                    freezingData.date = it["Date"]!!.value
+                    freezingData.time = it["Time"]!!.value
+                    freezingData.temperature = depthTemperature
+                }
+            }
+            println("<0: $freezingData ")
+        }
 
     }
 
@@ -318,10 +335,8 @@ class TempDataWindowControl : Initializable {
         println(keys)
         val data = table.items
         var dates = setOf<String?>()  //множество для дат
-//        val xValues: Array<String?> = arrayOf("0:01:00", "3:01:00", "6:01:00", "9:01:00", "12:01:00", "15:01:00", "18:01:00", "21:01:00")
         val xValues: Array<String?> = getTimesFromData(data)
 //        println("xValues = ${xValues.asList()}")
-//        val yValues: Map<String, Array<Double>> = mapOf(Pair("0:01:00", arrayOf(-4.19, 5.107, 5.68, 6.0)), Pair("3:01:00", arrayOf(3.18, -4.478, 5.428, 4.0)), Pair("6:01:00", arrayOf(2.485, 3.911, -5.05, 3.0)))
         var yValues = mutableMapOf<String?, Array<Double>>()
         data.forEach {//цикл по данным таблицы
             val dateProp = it["Date"]?.value //дата
@@ -335,79 +350,100 @@ class TempDataWindowControl : Initializable {
         }
         if (dates.size==1) {//если выбрана одна дата
             println("xValues = ${xValues.toList()}")
-            diagramWindowClass.showDiagram(
-                dates.first().toString(),
-                "Times",
-                xValues,
-                "Temperature",
-                "°C",
-                yValues,
-                keys.toTypedArray()
-            )
-        }        else if (dates.size>1 && daysList2.checkModel.checkedItems.size > 1) { //если несколько дат
+            diagramWindowClass.showDiagram(dates.first().toString(), "Times", xValues, "Temperature","°C", yValues, keys.toTypedArray())
+        } else if (dates.size>1 && daysList2.checkModel.checkedItems.size > 1) { //если несколько дат
             println("several dates")
-        }
-        else{
-                val months = getMonthsOrYears(dates)
-                if (months.size==1) { //если выбран 1 месяц
-                    println("1 month")
-                    yValues = mutableMapOf<String?, Array<Double>>()
-                    val cal = Calendar.getInstance()
-                    cal.set(Calendar.MONTH, months.first().toInt()-1);
-                    val monthDate = SimpleDateFormat("MMMM")
-                    val monthName = monthDate.format(cal.time)
-                    println("month name = $monthName")
-//                println("dates = $dates")
-                    dates.forEach { date->   //цикл по всем датам, чтобы посчитать средние для каждого месяца
-                        val dataFiltered = data.filter{//фильтруем данные таблицы пл текущей дате
-                            it["Date"]?.value==date
-                        }
-                        println("for $date ")
-                        yValues[date] = getAveragesArray(keys, dataFiltered)  //заносим массив средних данных по температуам глубин по дате
-                    }
-                    println("yValues = $yValues")
-                    diagramWindowClass.showDiagram(monthName, "Dates", dates.toTypedArray(), "Temperature", "°C", yValues, keys.toTypedArray())
-                } else if (months.size>1 && monthsList2.checkModel.checkedItems.size > 1){
-                    println("several months")
-                } else {
-                    val years = getMonthsOrYears(dates, 2)
+            val months = getMonthsOrYears(dates)
+            createDiagramForMonthDates(yValues, months, dates, data, diagramWindowClass)
+        } else {
+            val months = getMonthsOrYears(dates)
+            if (months.size == 1) { //если выбран 1 месяц
+                createDiagramForMonthDates(yValues, months, dates, data, diagramWindowClass)
+            } else if (months.size > 1 && monthsList2.checkModel.checkedItems.size > 1) {
+                println("several months")
+            } else {
+                val years = getMonthsOrYears(dates, 2)
 //                    println("years = $years")
-                    if (years.size == 1){
+                if (years.size == 1) {
 // title - Заголовок диаграммы, xLabel - Подпись для оси ОХ, xValues - Значения шкалы по оси ОХ, yLabel - Подпись для оси ОУ, yValues - Значения шкалы по оси ОУ,
 // arraySeriesNames - Названия серий данных
-                        println("1 year")
-                        yValues = mutableMapOf<String?, Array<Double>>()
-                        val yearName = years.first()
-                        val months = getMonthsOrYears(dates)
-                        val cal = Calendar.getInstance()
-                        var monthNames = arrayOf<String?>()
-                        months.forEach {
-                            cal.set(Calendar.MONTH, it.toInt()-1);
-                            val monthDate = SimpleDateFormat("MMMM")
-                            monthNames = monthNames.plus(monthDate.format(cal.time))
-                        }
-                        println("monthNames = $monthNames")
-                        months.forEach { month ->
-                            val dataFiltered = data.filter{//фильтруем данные таблицы по текущей дате
-                                it["Date"]?.value?.split(".")!![1]==month
-                            }
-                            println("for month = $month data:")
-//                            println("\t$dataFiltered")
-                            cal.set(Calendar.MONTH, month.toInt()-1);
-                            val monthDate = SimpleDateFormat("MMMM")
-                            val monthName = monthDate.format(cal.time)
-                            yValues[monthName] = getAveragesArray(keys, dataFiltered)
-                        }
-                        println("yValues = $yValues")
-                        diagramWindowClass.showDiagram(yearName, "Months", monthNames, "Temperature", "°C", yValues, keys.toTypedArray())
+                    println("1 year")
+                    yValues = mutableMapOf<String?, Array<Double>>()
+                    val yearName = years.first()
+                    val months = getMonthsOrYears(dates)
+                    val cal = Calendar.getInstance()
+                    var monthNames = arrayOf<String?>()
+                    months.forEach {
+                        cal.set(Calendar.MONTH, it.toInt() - 1);
+                        val monthDate = SimpleDateFormat("MMMM")
+                        monthNames = monthNames.plus(monthDate.format(cal.time))
                     }
-                    //todo значение глубины неправильно показывает из-за разных данных: 1001 или 1010
-                    //todo сделать сохранение текущих данных из таблицы в excel
-                    //todo сделать для нескольких дат, для нескольких месяцев, для нескольких лет
-                    //todo анализ месяца в разных годах
+                    println("monthNames = $monthNames")
+                    months.forEach { month ->
+                        val dataFiltered = data.filter {//фильтруем данные таблицы по текущей дате
+                            it["Date"]?.value?.split(".")!![1] == month
+                        }
+                        println("for month = $month data:")
+//                            println("\t$dataFiltered")
+                        cal.set(Calendar.MONTH, month.toInt() - 1);
+                        val monthDate = SimpleDateFormat("MMMM")
+                        val monthName = monthDate.format(cal.time)
+                        yValues[monthName] = getAveragesArray(keys, dataFiltered)
+                    }
+                    println("yValues = $yValues")
+                    diagramWindowClass.showDiagram(
+                        yearName,
+                        "Months",
+                        monthNames,
+                        "Temperature",
+                        "°C",
+                        yValues,
+                        keys.toTypedArray()
+                    )
                 }
+                //todo значение глубины неправильно показывает из-за разных данных: 1001 или 1010
+                //todo сделать сохранение текущих данных из таблицы в excel
+                //todo сделать для нескольких месяцев, для нескольких лет
+                //todo анализ месяца в разных годах
             }
         }
+        }
+
+    private fun createDiagramForMonthDates( //создает диаграмму для 1 месяца или нескольких дат одного месяца
+        yValues: MutableMap<String?, Array<Double>>,
+        months: Set<String>,
+        dates: Set<String?>,
+        data: ObservableList<Map<String, StringProperty>>,
+        diagramWindowClass: DiagramWindow
+    ) {
+        var yValues1 = yValues
+        println("1 month")
+        yValues1 = mutableMapOf<String?, Array<Double>>()
+        val cal = Calendar.getInstance()
+        cal.set(Calendar.MONTH, months.first().toInt() - 1);
+        val monthDate = SimpleDateFormat("MMMM")
+        val monthName = monthDate.format(cal.time)
+        println("month name = $monthName")
+        //                println("dates = $dates")
+        dates.forEach { date ->   //цикл по всем датам, чтобы посчитать средние для каждого месяца
+            val dataFiltered = data.filter {//фильтруем данные таблицы пл текущей дате
+                it["Date"]?.value == date
+            }
+            println("for $date ")
+            yValues1[date] =
+                getAveragesArray(keys, dataFiltered)  //заносим массив средних данных по температуам глубин по дате
+        }
+        println("yValues = $yValues1")
+        diagramWindowClass.showDiagram(
+            monthName,
+            "Dates",
+            dates.toTypedArray(),
+            "Temperature",
+            "°C",
+            yValues1,
+            keys.toTypedArray()
+        )
+    }
 
     private fun getTimesFromData(data: ObservableList<Map<String, StringProperty>>?): Array<String?> {
         var times =  setOf<String?>()
