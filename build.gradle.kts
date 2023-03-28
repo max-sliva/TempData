@@ -24,6 +24,7 @@ application {
 dependencies{
 //    implementation("com.opencsv:opencsv:5.7.1")
     implementation("com.couchbase.lite:couchbase-lite-java:3.0.5")
+//    implementation("org.controlsfx:controlsfx:11.1.2")
     implementation("org.controlsfx:controlsfx:8.40.18")
     implementation("commons-beanutils:commons-beanutils:1.9.4")
 }

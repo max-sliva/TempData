@@ -11,6 +11,7 @@ import javafx.scene.Node
 import javafx.scene.SnapshotParameters
 import javafx.scene.chart.*
 import javafx.scene.control.*
+import javafx.scene.effect.DropShadow
 import javafx.scene.image.WritableImage
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.AnchorPane
@@ -18,6 +19,8 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.paint.Color
 import javafx.scene.shape.Circle
+import javafx.scene.text.Font
+import javafx.scene.text.FontWeight
 import javafx.scene.text.Text
 import javafx.stage.Stage
 import java.awt.Desktop
@@ -395,21 +398,27 @@ class DiagramWindow : Initializable {
         val node = data.node
 //        var s = data.yValue.toString()
         var s = String.format("%.4f", data.yValue)
-        val dataText = Text(if (s.length>=6) s.substring(0..5) else s)
+        val dataText = Text(if (s.length>=5) s.substring(0..3) else s)
 //        println("!dataText = ${dataText.text}")
 //        println("node = $node")
 //        println("node parent = ${node.parent}")
         node.parentProperty().addListener { _, _, parent ->
             val parentGroup: Group = parent as Group
             parentGroup.children.add(dataText)
+            parentGroup.toFront()
         }
+        val ds = DropShadow()
+        ds.offsetY = 3.0
+        ds.color = Color.color(1.0, 1.0, 1.0);
+        dataText.effect = ds
+        dataText.font = Font.font("Verdana", FontWeight.BOLD, 12.0).apply {  }
 //todo придумать, как показывать надписи, если выходят за пределы графика
         node.boundsInParentProperty().addListener { ov, oldBounds, bounds ->
             dataText.layoutX = (bounds!!.minX + bounds.width / 2 - dataText.prefWidth(-1.0) / 2).roundToInt().toDouble()
             dataText.layoutY = (bounds.minY - dataText.prefHeight(-1.0) * 0.5).roundToInt().toDouble()
           //  if (data.yValue.toFloat() < 0) { //если значение отрицательное, то опускаем его ниже
                 dataText.layoutY+=50   //опускаем надпись ниже
-           // dataText.fill = Color.WHITE  //todo сделать жирным текст
+           // dataText.fill = Color.WHITE
             //}
         }
         dataText.toFront()

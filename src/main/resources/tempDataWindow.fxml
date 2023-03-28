@@ -19,6 +19,7 @@
                       </Menu>
                       <Menu mnemonicParsing="false" text="Edit">
                         <items>
+                              <MenuItem fx:id="fontCall" mnemonicParsing="false" onAction="#openFontDialog" text="Font..." />
                           <MenuItem fx:id="freezingAnalysisLaunch" disable="true" mnemonicParsing="false" onAction="#onFreezingAnalysisLaunch" text="Freezing analysis" />
                         </items>
                       </Menu>

@@ -11,6 +11,7 @@ import javafx.scene.layout.HBox
 import javafx.stage.FileChooser
 import javafx.stage.Stage
 import org.controlsfx.control.CheckComboBox
+import org.controlsfx.dialog.FontSelectorDialog
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
@@ -19,6 +20,7 @@ import java.net.URL
 import java.nio.file.Paths
 import java.text.SimpleDateFormat
 import java.util.*
+
 
 data class FreezingData(var date: String = "", var time: String = "", var curMinusDepth: Int = 0, var temperature: Float = 1f)
 
@@ -303,7 +305,16 @@ class TempDataWindowControl : Initializable {
         }
     }
 
-    fun onFreezingAnalysisLaunch(actionEvent: ActionEvent) { //todo анализ промерзания по глубинам
+    //todo в отд окне анализ промерзания с показом месяца и глубины + график промерзания по месяцам и глубинам + инфо при наведении на точку графика
+    fun onFreezingAnalysisLaunch(actionEvent: ActionEvent) {
+        val fxmlLoader = getLoader("FreezingAnalysis.fxml")
+        val stage = Stage() //создаем новое окно
+        stage.scene = Scene(fxmlLoader.load()) //загружаем в него данные
+        val freezingAnalysisClass = fxmlLoader.getController<FreezingAnalysisWindow>()
+//        stage.initModality(Modality.WINDOW_MODAL) //делаем окно модальным
+        stage.initOwner(mainPane.scene.window) //и его владельцем делаем главное окно
+        stage.show()
+
         println("freezing in depth: ")
         val data = table.items
         data.forEach {
@@ -401,10 +412,9 @@ class TempDataWindowControl : Initializable {
                         keys.toTypedArray()
                     )
                 }
-                //todo значение глубины неправильно показывает из-за разных данных: 1001 или 1010
-                //todo сделать сохранение текущих данных из таблицы в excel
                 //todo сделать для нескольких месяцев, для нескольких лет
-                //todo анализ месяца в разных годах
+                //todo анализ месяца в разных годах (в отд окне)
+                //todo сделать сохранение текущих данных из таблицы в excel
             }
         }
         }
@@ -486,5 +496,10 @@ class TempDataWindowControl : Initializable {
             monthsOrYears = monthsOrYears.plus(month)
         }
         return monthsOrYears
+    }
+
+    fun openFontDialog(actionEvent: ActionEvent) {
+        val fs = FontSelectorDialog(null)
+        fs.show()
     }
 }
