@@ -54,7 +54,7 @@ class DiagramWindow : Initializable {
     lateinit var tabPane: TabPane
     lateinit var tabForDiagram: AnchorPane
     lateinit var paneForDiagram: HBox
-    lateinit var db: DBwork
+//    lateinit var db: DBwork
     lateinit var seriesNames: Array<String>
     lateinit var chartParams: ChartParams
     var divValue = 10 //значение, на которое делим значение глубины, чтобы получить нормальное в метрах
@@ -64,7 +64,7 @@ class DiagramWindow : Initializable {
 //    lateinit var bc: XYChart<String, Number>
     override fun initialize(location: URL?, resources: ResourceBundle?) {
         println("Diagram window")
-        db = DBwork()
+//        db = DBwork()
         opacitySlider.valueProperty().addListener { _, oldVal, newVal -> //прозрачность окна
             (paneForDiagram.scene.window as Stage).opacity = 1 - newVal.toInt() / 100.0
         }

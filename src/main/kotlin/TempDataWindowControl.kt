@@ -20,6 +20,7 @@ import java.net.URL
 import java.nio.file.Paths
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 data class FreezingData(var date: String = "", var time: String = "", var curMinusDepth: Int = 0, var temperature: Float = 1f)
@@ -307,22 +308,15 @@ class TempDataWindowControl : Initializable {
 
     //todo в отд окне анализ промерзания с показом месяца и глубины + график промерзания по месяцам и глубинам + инфо при наведении на точку графика
     fun onFreezingAnalysisLaunch(actionEvent: ActionEvent) {
-        val fxmlLoader = getLoader("FreezingAnalysis.fxml")
-        val stage = Stage() //создаем новое окно
-        stage.scene = Scene(fxmlLoader.load()) //загружаем в него данные
-        val freezingAnalysisClass = fxmlLoader.getController<FreezingAnalysisWindow>()
-//        stage.initModality(Modality.WINDOW_MODAL) //делаем окно модальным
-        stage.initOwner(mainPane.scene.window) //и его владельцем делаем главное окно
-        stage.show()
-
         println("freezing in depth: ")
         val data = table.items
+        val freezingDataArray = ArrayList<FreezingData>()
         data.forEach {
 //            var curMinusDepth = 0
             val freezingData = FreezingData()
             keys.forEach {depth->
                 val depthTemperature = it[depth]?.value!!.replace(',','.').toFloat()
-                if ( depthTemperature!! < 0 && depth.toInt()>freezingData.curMinusDepth) {
+                if ( depthTemperature < 0 && depth.toInt()>freezingData.curMinusDepth) {
 //                    println("< 0: $depthVal on $depth ${it["Date"]?.value} ${it["Time"]?.value} ")
                     freezingData.curMinusDepth = depth.toInt()
                     freezingData.date = it["Date"]!!.value
@@ -330,8 +324,18 @@ class TempDataWindowControl : Initializable {
                     freezingData.temperature = depthTemperature
                 }
             }
-            println("<0: $freezingData ")
+            freezingDataArray.add(freezingData)
+//            println("<0: $freezingData ")
         }
+        val fxmlLoader = getLoader("FreezingAnalysis.fxml")
+        val stage = Stage() //создаем новое окно
+        stage.scene = Scene(fxmlLoader.load()) //загружаем в него данные
+        val freezingAnalysisClass = fxmlLoader.getController<FreezingAnalysisWindow>()
+//        stage.initModality(Modality.WINDOW_MODAL) //делаем окно модальным
+        freezingAnalysisClass.setTitle("Freezing Analysis")
+        freezingAnalysisClass.setData(freezingDataArray)
+        stage.initOwner(mainPane.scene.window) //и его владельцем делаем главное окно
+        stage.show()
 
     }
 
