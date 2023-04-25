@@ -5,7 +5,20 @@
 
 <BorderPane prefHeight="410.0" prefWidth="675.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="FreezingAnalysisWindow">
    <top>
-      <HBox fx:id="topHBox" prefHeight="39.0" prefWidth="600.0" BorderPane.alignment="CENTER" />
+      <HBox fx:id="topHBox" prefHeight="39.0" prefWidth="600.0" BorderPane.alignment="CENTER">
+         <children>
+            <ButtonBar prefHeight="40.0" prefWidth="200.0">
+               <buttons>
+                  <RadioButton mnemonicParsing="false" selected="true" text="Hourly">
+                     <toggleGroup>
+                        <ToggleGroup fx:id="frequency" />
+                     </toggleGroup>
+                  </RadioButton>
+                  <RadioButton mnemonicParsing="false" text="Dayly" toggleGroup="$frequency" />
+                  <RadioButton mnemonicParsing="false" text="Monthly" toggleGroup="$frequency" />
+               </buttons>
+            </ButtonBar>
+         </children></HBox>
    </top>
    <center>
       <TableView fx:id="freezingTable" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">

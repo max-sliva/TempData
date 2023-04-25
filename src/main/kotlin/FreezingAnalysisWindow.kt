@@ -14,7 +14,7 @@ class FreezingAnalysisWindow: Initializable {
     lateinit var freezingTable: TableView<Any>
 
     override fun initialize(location: URL?, resources: ResourceBundle?) {
-
+//todo сделать переключение показа данных в таблице по часам, дням, месяцам
     }
 
     fun setTitle(title: String) {
@@ -29,5 +29,7 @@ class FreezingAnalysisWindow: Initializable {
         freezingArray.forEach{
             println("<0: $it ")
         }
+        //todo сделать вывод данных в таблицу
+
     }
 }
