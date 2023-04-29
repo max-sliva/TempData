@@ -314,7 +314,7 @@ class TempDataWindowControl : Initializable {
         data.forEach {
 //            var curMinusDepth = 0
             val freezingData = FreezingData()
-            keys.forEach {depth->
+            keys.forEach {depth-> //цикл по глубинам
                 val depthTemperature = it[depth]?.value!!.replace(',','.').toFloat()
                 if ( depthTemperature < 0 && depth.toInt()>freezingData.curMinusDepth) {
 //                    println("< 0: $depthVal on $depth ${it["Date"]?.value} ${it["Time"]?.value} ")
@@ -324,7 +324,7 @@ class TempDataWindowControl : Initializable {
                     freezingData.temperature = depthTemperature
                 }
             }
-            freezingDataArray.add(freezingData)
+            if (freezingData.temperature<0) freezingDataArray.add(freezingData)
 //            println("<0: $freezingData ")
         }
         val fxmlLoader = getLoader("FreezingAnalysis.fxml")

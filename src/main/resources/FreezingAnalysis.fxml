@@ -9,13 +9,13 @@
          <children>
             <ButtonBar prefHeight="40.0" prefWidth="200.0">
                <buttons>
-                  <RadioButton mnemonicParsing="false" selected="true" text="Hourly">
+                  <RadioButton fx:id="hourlyRadioBtn" mnemonicParsing="false" onAction="#hourlySelected" selected="true" text="Hourly">
                      <toggleGroup>
                         <ToggleGroup fx:id="frequency" />
                      </toggleGroup>
                   </RadioButton>
-                  <RadioButton mnemonicParsing="false" text="Dayly" toggleGroup="$frequency" />
-                  <RadioButton mnemonicParsing="false" text="Monthly" toggleGroup="$frequency" />
+                  <RadioButton fx:id="daylyRadioBtn" mnemonicParsing="false" onAction="#daylySelected" text="Dayly" toggleGroup="$frequency" />
+                  <RadioButton fx:id="monthlyRadioBtn" mnemonicParsing="false" onAction="#monthlySelected" text="Monthly" toggleGroup="$frequency" />
                </buttons>
             </ButtonBar>
          </children></HBox>
