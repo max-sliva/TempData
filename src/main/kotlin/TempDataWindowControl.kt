@@ -328,14 +328,15 @@ class TempDataWindowControl : Initializable {
 //            println("<0: $freezingData ")
         }
         val fxmlLoader = getLoader("FreezingAnalysis.fxml")
-        val stage = Stage() //создаем новое окно
-        stage.scene = Scene(fxmlLoader.load()) //загружаем в него данные
+        val freezingStage = Stage() //создаем новое окно
+        freezingStage.scene = Scene(fxmlLoader.load()) //загружаем в него данные
         val freezingAnalysisClass = fxmlLoader.getController<FreezingAnalysisWindow>()
 //        stage.initModality(Modality.WINDOW_MODAL) //делаем окно модальным
         freezingAnalysisClass.setTitle("Freezing Analysis")
-        freezingAnalysisClass.setData(freezingDataArray)
-        stage.initOwner(mainPane.scene.window) //и его владельцем делаем главное окно
-        stage.show()
+        val depthType = if (keys.get(1) == "1010") 10 else 1
+        freezingAnalysisClass.setData(freezingDataArray, depthType)
+        freezingStage.initOwner(mainPane.scene.window) //и его владельцем делаем главное окно
+        freezingStage.show()
 
     }
 

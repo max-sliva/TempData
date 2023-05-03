@@ -29,6 +29,7 @@
             <RadioButton mnemonicParsing="false" onAction="#allInOneClick" selected="true" text="all in one" toggleGroup="$tabs" />
             <ComboBox fx:id="chartsComboBox" onAction="#onChooseChart" prefWidth="150.0" promptText="Charts" />
             <Button fx:id="saveToImageButton" mnemonicParsing="false" onAction="#saveToImage" text="Save to image" />
+            <CheckBox fx:id="showTempCheckBtn" mnemonicParsing="false" onAction="#showTempOnFreezingDiagram" text="show temp" visible="false" />
          </children>
       </HBox>
    </top>

@@ -1,5 +1,7 @@
 import javafx.application.Platform
 import javafx.beans.binding.ObjectExpression
+import javafx.beans.property.SimpleFloatProperty
+import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.embed.swing.SwingFXUtils
 import javafx.event.ActionEvent
@@ -44,6 +46,8 @@ data class ChartParams(val title: String,
 data class SeriesXY(val x: String, val y: Double) //класс для значений серий данных для изменения диаграммы
 class DiagramWindow : Initializable {
 
+    lateinit var showTempCheckBtn: CheckBox
+
     @FXML
     lateinit var zoomSlider: Slider
     lateinit var checkBoxesForSeriesPane: HBox
@@ -60,6 +64,8 @@ class DiagramWindow : Initializable {
     var divValue = 10 //значение, на которое делим значение глубины, чтобы получить нормальное в метрах
     val initColor = "008080" //начальный цвет для диаграмм в табах
     var mapOfDeletedSeries = mapOf<String, Array<SeriesXY>>()
+    lateinit var seriesForFreezing: ArrayList<XYChart.Series<String, Number>>
+    lateinit var tempMapForFreezing: Map<String?, Float>
 //    var mapOfDeletedSeriesX = mapOf<String, Array<String>>()
 //    lateinit var bc: XYChart<String, Number>
     override fun initialize(location: URL?, resources: ResourceBundle?) {
@@ -129,7 +135,7 @@ class DiagramWindow : Initializable {
 //        println("data received: xValues = ${xValues.toList()}")
         val window = tabPane.scene.window as Stage
         window.title = title
-        if (arraySeriesNames[1]=="1010") divValue = 100 //если второе значение глубины 1010, то делить будем на 100
+        if (arraySeriesNames.size>1 && arraySeriesNames[1]=="1010") divValue = 100 //если второе значение глубины 1010, то делить будем на 100
         seriesNames = arraySeriesNames
         var bc = createBarChartForDay(title, xLabel, xValues, yLabel, ySuffix, yValues, seriesNames, chartType)
         chartParams = ChartParams(title, xLabel, xValues, yLabel, ySuffix, yValues, seriesNames)
@@ -432,6 +438,98 @@ class DiagramWindow : Initializable {
         } else {
             node.style = "-fx-bar-fill: -fx-not-achieved;"
         }
+    }
+
+    fun showFreezingDiagram(
+        title: String,
+        xLabel: String,
+        xValues: Array<String?>,
+        yLabel: String,
+        ySuffix: String,
+        yValues: Map<String?, Int>,
+        dataSeries: Array<String>,
+        tempMap: Map<String?, Float>
+    ) {
+        (paneForDiagram.scene.window as Stage).title = title
+        val xAxis = CategoryAxis() //создаем ось ОХ
+        val yAxis = NumberAxis(0.0, yValues.values.max().toDouble()+10, 10.0) //создаем ось OY
+//        yAxis.tickUnit = 10.0
+        yAxis.tickLabelFormatter = NumberAxis.DefaultFormatter(yAxis, null, ySuffix)
+        var bc = LineChart<String, Number>(xAxis, yAxis)
+        bc.title = title
+        xAxis.label = xLabel //задаем общую подпись оси ОХ
+        xAxis.categories = FXCollections.observableArrayList(listOf(*xValues))//задаем подписи категорий оси ОХ
+        xAxis.tickLabelRotation = -45.0
+        yAxis.label = yLabel //задаем общую подпись оси OY
+//        yAxis.
+        val series = ArrayList<XYChart.Series<String, Number>>() //массив серий данных
+        dataSeries.forEach {//цикл по названиям серий данных
+            val seriesPart = XYChart.Series<String, Number>().apply { name = it } //создаем серию с нужным названием
+            series.add(seriesPart) //добавляем в массив
+        }
+        xValues.forEach {//цикл по значения оси Х - по временам снятия показаний
+            val yValue = yValues[it] //берем массив значений данного времени
+            val data = XYChart.Data<String, Number>(it,yValue)
+            series[0].data.add(data)
+            seriesForFreezing = series
+            //todo подумать, как передавать температуру и связывать с точкой графика (возможно, мап)
+//            series[0].data.forEach { dataPart ->
+//                dataPart.node = createDataNode(dataPart.YValueProperty())
+//            }
+        }
+
+        bc.isLegendVisible = false
+        bc.data.addAll(series)
+        series.forEach {   //для добавления всплывающего сообщения при наведении на точку графика или линию барчарта
+            for (entry in it.data) { //проходим по данным
+//                println("Entered!")
+//                String.format("%.4f", entry.yValue)
+//                val s = entry.yValue.toString() //берем значение
+                val s = String.format("%.4f", tempMap[entry.xValue]) //берем значение
+                println("s in tooltip = $s")
+                val t = Tooltip(if (s.length>=6) s.substring(0..5) else s) //и сокращаем его, если оно длинне 6 символов
+                Tooltip.install(entry.node, t) //добавляем тултип к объекту
+//                val node = entry.node
+                entry.node.onMouseEntered = EventHandler<MouseEvent?>() {event->  //для сокращения задержки вывода сообщения
+                    // +15 moves the tooltip 15 pixels below the mouse cursor;
+                    // if you don't change the y coordinate of the tooltip, you will see constant screen flicker
+                    t.show(entry.node, event.screenX, event.screenY + 15)
+                }
+                entry.node.onMouseExited = EventHandler { t.hide() }
+            }
+        }
+        bc.minWidth = 0.0
+        bc.prefWidth = 2000.0 //чтобы диаграмма менялась с изменением окна
+        paneForDiagram.children.add(bc)
+        showTempCheckBtn.isVisible = true
+        tempMapForFreezing = tempMap
+    }
+
+    fun showTempOnFreezingDiagram(actionEvent: ActionEvent) {
+        seriesForFreezing[0].data.forEach { dataPart ->
+//            val xValue = dataPart.XValueProperty().value
+//            var myDataPart =  XYChart.Data<String, Number>()
+//            myDataPart.xValue = xValue
+//            val y = tempMapForFreezing[xValue]
+//            myDataPart.yValue = y
+//            println("dataPart.XValueProperty() = $xValue")
+//            var obj : ObjectExpression<Number> =
+//            obj.value = y
+//            dataPart.node = createDataNodeForFreezing(dataPart)
+        }
+    }
+
+    private fun createDataNodeForFreezing(dataPart: XYChart.Data<String, Number>): Node? {
+        val label = Label()
+        val value = dataPart.XValueProperty().value
+        val y = tempMapForFreezing[value]
+        var myProperty = SimpleFloatProperty(y!!)
+        label.textProperty().bind(myProperty.asString("%,.2f"))
+        val pane = Pane(label)
+        pane.shape = Circle(6.0)
+        pane.isScaleShape = false
+        label.translateYProperty().bind(label.heightProperty().divide(-1.5))
+        return pane
     }
 }
 
