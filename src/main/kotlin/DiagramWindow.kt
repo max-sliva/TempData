@@ -418,7 +418,8 @@ class DiagramWindow : Initializable {
         ds.color = Color.color(1.0, 1.0, 1.0);
         dataText.effect = ds
         dataText.font = Font.font("Verdana", FontWeight.BOLD, 12.0).apply {  }
-//todo придумать, как показывать надписи, если выходят за пределы графика
+//todo придумать, как показывать надписи, если выходят за пределы графика (особенно для отрицательных)
+        //todo сделать настройку шрифтов
         node.boundsInParentProperty().addListener { ov, oldBounds, bounds ->
             dataText.layoutX = (bounds!!.minX + bounds.width / 2 - dataText.prefWidth(-1.0) / 2).roundToInt().toDouble()
             dataText.layoutY = (bounds.minY - dataText.prefHeight(-1.0) * 0.5).roundToInt().toDouble()
@@ -473,6 +474,7 @@ class DiagramWindow : Initializable {
             series[0].data.add(data)
             seriesForFreezing = series
             //todo подумать, как передавать температуру и связывать с точкой графика (возможно, мап)
+            //todo для промерзания сделать график вниз глубинами
 //            series[0].data.forEach { dataPart ->
 //                dataPart.node = createDataNode(dataPart.YValueProperty())
 //            }
